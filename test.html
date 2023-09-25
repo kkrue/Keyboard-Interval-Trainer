@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Tester</title>
+		<meta charset="UTF-8">
+		<link rel="stylesheet" type="text/css" href="styles.css">
+		<link href="note.ico" rel="icon" type="image/x-icon" />
+
+		<script module src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+		<script src="note_tools.js" type="module"></script>
+		<script src="game.js" type="module"></script>
+		<script src="chord.js" type="module"></script>
+		<script src="note_generator.js" type="module"></script>
+		<script src="game_setup.js" type="module"></script>
+
+		<link rel="stylesheet" href="https://unpkg.com/jest-lite@1.0.0-alpha.4/dist/prettify.css" />
+		<script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+		<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+		<script crossorigin src="https://unpkg.com/jest-lite@1.0.0-alpha.4/dist/core.js"></script>
+		<script crossorigin src="https://unpkg.com/jest-lite@1.0.0-alpha.4/dist/enzyme.js"></script>
+		<script crossorigin src="https://unpkg.com/jest-lite@1.0.0-alpha.4/dist/prettify.js"></script>
+		<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.6/underscore-min.js"></script>
+	</head>
+	<body>
+		<script type="module">
+			const {
+				core: {describe, it, expect, run},
+				enzyme: {mount},
+				prettify,
+			} = window.jestLite;
+
+			import { ChordCreator } from './chord.js';
+			import { NoteTools } from './note_tools.js';
+			import { NoteGenerator } from './note_generator.js';
+			import { Game } from './game.js';
+
+			const noteTools = new NoteTools();
+			const noteGenerator = new NoteGenerator(noteTools);
+			const chordCreator = new ChordCreator(noteTools);
+			const game = new Game(noteTools, noteGenerator);
+
+			noteTools.loadNotePositionsOnStaff("treble");
+
+			const notesBox = document.querySelector("#notes");
+			let notes = noteGenerator.getRandomNoteInterval(3, 3, 5, 3, 3);
+
+			expect.extend({
+				toEqualArray(received, expected) {
+					const pass = _.isEqual(received, expected);
+					if (pass) {
+					return {
+						message: () => `Expected value to not equal [${expected}], but received [${received}]`,
+						pass: true,
+					};
+					} else {
+					return {
+						message: () => `Expected value to equal [${expected}], but received [${received}]`,
+						pass: false,
+					};
+					}
+				},
+			});
+
+			function createNoteObj(midiNote) {
+				return noteTools.createNoteObject(midiNote);
+			}
+
+			function getArrayOfNotes(oNoteArr) {
+				return oNoteArr.map(obj => obj.noteWithOctave);
+			}
+
+			describe('getRandomNoteInterval', () => {
+				it('Ensures there are three notes', () => {
+					expect(notes.length).toBe(3);
+				});
+			});
+
+			runAdjustedIntervalTests();
+			testGetLineForPlayedNote();
+			testGetNumberOfLedgers();
+			testChordCreator();
+
+			prettify.toHTML(run(), document.body);
+
+			function runAdjustedIntervalTests() {
+				const adjusted1 = noteTools.adjustIntervalForKeySignature("0#", ['C4','E4','G4']);
+				describe('adjustIntervalForKeySignature', () => {
+					it('Vanilla C Major test', () => {
+						expect(getArrayOfNotes(adjusted1)).toEqualArray(['C4', 'E4', 'G4']);
+					});
+				});
+
+				const adjusted2 = noteTools.adjustIntervalForKeySignature("7#", ['A4','B4','C4','D4','E4','F4','G4']);
+				describe('adjustIntervalForKeySignature', () => {
+					it('7 sharp test', () => {
+						let arrayOfNotes = getArrayOfNotes(adjusted2);
+						expect(arrayOfNotes).toEqualArray(['A#4','C5','C#4','D#4','F4','F#4','G#4']);
+					});
+				});
+
+				const adjusted3 = noteTools.adjustIntervalForKeySignature("7f", ['A4','B4','C4','D4','E4','F4','G4']);
+				describe('adjustIntervalForKeySignature', () => {
+					it('7 flat test', () => {
+						expect(getArrayOfNotes(adjusted3)).toEqualArray(['G#4','A#4','B3','C#4','D#4','E4','F#4']);
+					});
+				});
+			}
+
+			function testGetLineForPlayedNote() {
+				// What MIDI note is played goes in, what it will be on the staff comes out (sharps are later stripped)..
+				describe('getLineForPlayedNote', () => {
+					it('Test all notes', () => {
+						expect(noteTools.getLineForPlayedNote('0#', createNoteObj('A4')).displayedNote).toBe('A4');
+						expect(noteTools.getLineForPlayedNote('1#', createNoteObj('A4')).displayedNote).toBe('A4');
+						expect(noteTools.getLineForPlayedNote('1#', createNoteObj('F#4')).displayedNote).toBe('F4');
+
+						expect(noteTools.getLineForPlayedNote('7#', createNoteObj('A4')).displayedNote).toBe('A4');
+						expect(noteTools.getLineForPlayedNote('7#', createNoteObj('B4')).displayedNote).toBe('B4');
+						expect(noteTools.getLineForPlayedNote('7#', createNoteObj('C5')).displayedNote).toBe('B4');
+						expect(noteTools.getLineForPlayedNote('7#', createNoteObj('D4')).displayedNote).toBe('D4');
+						expect(noteTools.getLineForPlayedNote('7#', createNoteObj('E4')).displayedNote).toBe('E4');
+						expect(noteTools.getLineForPlayedNote('7#', createNoteObj('F4')).displayedNote).toBe('E4');
+						expect(noteTools.getLineForPlayedNote('7#', createNoteObj('G4')).displayedNote).toBe('G4');
+
+						expect(noteTools.getLineForPlayedNote('7f', createNoteObj('A4')).displayedNote).toBe('A4');
+						expect(noteTools.getLineForPlayedNote('7f', createNoteObj('A#4')).displayedNote).toBe('B4');
+						expect(noteTools.getLineForPlayedNote('7f', createNoteObj('B4')).displayedNote).toBe('C5');
+						expect(noteTools.getLineForPlayedNote('7f', createNoteObj('C4')).displayedNote).toBe('C4');
+						expect(noteTools.getLineForPlayedNote('7f', createNoteObj('C#4')).displayedNote).toBe('D4');
+						expect(noteTools.getLineForPlayedNote('7f', createNoteObj('D4')).displayedNote).toBe('D4');
+						expect(noteTools.getLineForPlayedNote('7f', createNoteObj('D#4')).displayedNote).toBe('E4');
+						expect(noteTools.getLineForPlayedNote('7f', createNoteObj('E4')).displayedNote).toBe('F4');
+						expect(noteTools.getLineForPlayedNote('7f', createNoteObj('F#4')).displayedNote).toBe('G4');
+						expect(noteTools.getLineForPlayedNote('7f', createNoteObj('F4')).displayedNote).toBe('F4');
+						expect(noteTools.getLineForPlayedNote('7f', createNoteObj('F#4')).displayedNote).toBe('G4');
+						expect(noteTools.getLineForPlayedNote('7f', createNoteObj('G4')).displayedNote).toBe('G4');
+						expect(noteTools.getLineForPlayedNote('7f', createNoteObj('G#4')).displayedNote).toBe('A4');
+					});
+				});
+			}
+
+			function testGetNumberOfLedgers() {
+				describe('GetNumberOfLedgers', () => {
+					it('Test getNumberOfLedgers', () => {
+						expect(noteTools.getNumberOfLedgers("C4").numLedgers).toBe(1);
+					});
+				});
+			}
+
+			function testChordCreator() {
+				describe('create', () => {
+					it('Test create chord', () => {
+						expect(chordCreator.create(createNoteObj('C4'), 'maj')).toEqualArray(['C4', 'E4', 'G4']);
+						expect(chordCreator.create(createNoteObj('G4'), 'maj')).toEqualArray(['G4', 'B4', 'D5']);
+						expect(chordCreator.create(createNoteObj('G4'), 'min')).toEqualArray(['G4', 'A#4', 'D5']);
+					});
+				});
+
+				describe('Inversions', () => {
+					it('First inversion', () => {
+						expect(chordCreator.inversion(createNoteObj('G4'), 'maj', 1)).toEqualArray(['B4', 'D5', 'G5']);
+						expect(chordCreator.inversion(createNoteObj('C3'), 'maj', 1)).toEqualArray(['E3', 'G3', 'C4']);
+						expect(chordCreator.inversion(createNoteObj('B4'), 'maj', 1)).toEqualArray(['D#5', 'F#5', 'B5']);
+						expect(chordCreator.inversion(createNoteObj('G3'), 'min6', 1)).toEqualArray(['A#3', 'D4', 'E4', 'G4']);
+					});
+
+					it('Second inversion', () => {
+						expect(chordCreator.inversion(createNoteObj('G4'), 'maj', 2)).toEqualArray(['D5', 'G5', 'B5']);
+					});
+				});
+			}
+		</script>
+	</body>
+</html>

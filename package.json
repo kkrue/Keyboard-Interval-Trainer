@@ -1,0 +1,20 @@
+{
+  "name": "mika",
+  "version": "1.0.0",
+  "description": "MIDI Interval Keyboard Application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "MIDI",
+    "keyboard",
+    "intervals"
+  ],
+  "author": "Kurt Krueger",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "http-server": "^14.1.1"
+  }
+}

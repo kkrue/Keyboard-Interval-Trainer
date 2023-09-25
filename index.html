@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>MIDI Keyboard Interval Training (MidiKit)</title>
+		<meta charset="UTF-8">
+		<link rel="stylesheet" type="text/css" href="styles.css">
+		<link href="note.ico" rel="icon" type="image/x-icon" />
+		<script src="https://cdn.jsdelivr.net/npm/webmidi@next/dist/iife/webmidi.iife.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+		<script src="note_tools.js" type="module"></script>
+		<script src="game.js" type="module"></script>
+		<script src="note_generator.js" type="module"></script>
+		<script src="chord.js" type="module"></script>
+		<script src="game_setup.js" type="module"></script>
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+		<script type="module">
+			import { Setup } from './game_setup.js';
+
+			$(document).ready(() => {
+				const setup = new Setup();
+				setup.load();
+			});
+		</script>
+	</head>
+	<body>
+		<div style="width: 1000px; margin:0px auto" id="gameBoard">
+			<div id="scoreBoard">
+				<div id="scoreCorrect" class="score" style="background-color: green;" title="# correct">
+					<div id="scoreCorrectNumber" class="scoreNumber">0</div>
+				</div>
+				<div id="scoreWrong" class="score" style="background-color: red;" title="# incorrect">
+					<div id="scoreWrongNumber" class="scoreNumber">0</div>
+				</div>
+				<div id="scoreTotal" class="score" style="background-color: black; color: white" title="Total">
+					<div id="scoreTotalNumber" class="scoreNumber">0</div>
+				</div>
+				<div id="stats">
+					Speed: <span id="speed"></span>
+					Avg. Speed: <span id="avgSpeed"></span>
+					Score: <span id="finalScore"></span>
+				</div>
+			</div>
+
+			<div id="controls">
+				<form name="frmControls" id="frmControls">
+					<fieldset>
+						<legend>Notes</legend>
+
+						<input type="radio" name="noteGroups" id="individualNote" value="individual" checked> Individual
+						<input type="radio" name="noteGroups" id="intervalNotes" value="interval"> Interval
+						<input type="radio" name="noteGroups" id="chords" value="chords"> Chords
+
+						<div style="margin-top: 0.4em">
+							<input type="radio" name="clefType" id="trebleClef" value="treble" checked> Treble
+							<input type="radio" name="clefType" id="bassClef" value="bass"> Bass
+						</div>
+						<div style="margin-top: 0.4em">
+							Key Signature
+							<select name="keySignature" id="keySignature">
+								<option value="0#">C / Am (0 sharps)</option>
+								<option value="1#">G / Em (1 sharp)</option>
+								<option value="2#">D / Bm(2 sharps)</option>
+								<option value="3#">A / F#m (3 sharps)</option>
+								<option value="4#">E / C#m (4 sharps)</option>
+								<option value="5#">B / G#m (5 sharps)</option>
+								<option value="6#">F# / D# (6 sharps)</option>
+								<option value="7#">C# / A# (7 sharps)</option>
+								<option value="1f">F / Dm (1 flat)</option>
+								<option value="2f">Bb / Gm (2 flats)</option>
+								<option value="3f">Eb / Cm (3 flats)</option>
+								<option value="4f">Ab / Fm (4 flats)</option>
+								<option value="5f">Db / Bbm (5 flats)</option>
+								<option value="6f">Gb / Ebm (6 flats)</option>
+								<option value="7f">Cb / Abm (7 flats)</option>
+							</select>
+						</div>
+
+						Range
+						<select name="startRange" id="startRange"></select> to <select name="endRange" id="endRange"></select>
+						<br>
+						<input type="checkbox" id="chkShowNotes"> Show notes<br>
+
+						<input type="text" name="numNoteTests" id="numNoteTests" size="2" value="20" onclick="this.select()" style="text-align: right;"> Correct to finish
+					</fieldset>
+
+					<fieldset id="intervals" disabled>
+						<legend>Intervals</legend>
+						<select name="minInterval" id="minInterval">
+							<option value="2">2</option>
+							<option value="3" selected>3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+							<option value="6">6</option>
+						</select>
+						Min separation<br>
+
+						<select name="maxInterval" id="maxInterval">
+							<option value="2">2</option>
+							<option value="3" selected>3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+							<option value="6">6</option>
+						</select>
+
+						Max separation<br>
+						<select name="notesInInterval" id="notesInInterval">
+							<option value="2" selected>2</option>
+							<option value="3">3</option>
+						</select>
+						Notes in interval<br>
+					</fieldset>
+
+					<fieldset id="chordsGroup" disabled>
+						<legend>Chords</legend>
+						Inversions
+						<select name="chordInversions" id="chordInversions">
+							<option value="0" selected>None</option>
+							<option value="1" >First Inversion</option>
+							<option value="2">Second Inversion</option>
+						</select>
+						<div style="margin-bottom: 0.5em"></div>
+						<input type="checkbox" id="chordTypeMaj" value="maj" /> Major<br>
+						<input type="checkbox" id="chordTypeMin" value="min" /> Minor<br>
+						<input type="checkbox" id="chordTypeAug" value="aug" /> Augmented<br>
+						<input type="checkbox" id="chordTypeDim" value="dim" /> Diminished<br>
+						<input type="checkbox" id="chordTypeSus2" value="sus2" /> Suspended 2nd<br>
+						<input type="checkbox" id="chordTypeSus4" value="sus4" /> Suspended 4th<br>
+						<input type="checkbox" id="chordTypeMaj7" value="maj7" /> Major 7th<br>
+						<input type="checkbox" id="chordTypeMin7" value="min7" /> Minor 7th<br>
+						<input type="checkbox" id="chordTypeDom7" value="dom7" /> Dominant 7th<br>
+						<input type="checkbox" id="chordTypeDim7" value="dim7" /> Diminished 7th<br>
+						<input type="checkbox" id="chordTypeMaj6" value="maj6" /> Major 6th<br>
+						<input type="checkbox" id="chordTypeMin6" value="min6" /> Minor 6th<br>
+					</fieldset>
+				</div>
+
+				<div id="mainDisplay">
+					<div id="messageDisplay">
+						Press middle C to begin
+					</div>
+					<div id="noteDisplay">
+						&nbsp;
+					</div>
+					<div id="musicContainer">
+						<div class="line"></div>
+						<div class="line"></div>
+						<div class="line"></div>
+						<div class="line"></div>
+						<div class="line"></div>
+
+						<div class="clef" id="clef"></div>
+
+						<div id="ledgers" class="ledgerGroup">
+							<div class="ledger"></div>
+							<div class="ledger"></div>
+							<div class="ledger"></div>
+							<div class="ledger"></div>
+							<div class="ledger"></div>
+						</div>
+					</div>
+
+					<div class="game-over" id="gameOverMessage">Game Over</div>
+				</div>
+			</form>
+			<br>
+		</div>
+	</body>
+</html>

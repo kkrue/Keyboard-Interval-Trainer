@@ -1,0 +1,162 @@
+@font-face {
+	font-family: 'MusiSync';
+	src: url('Musisync-KVLZ.ttf')
+}
+
+body {
+	font-family: Verdana, Helvetica, sans-serif;
+	font-size: 0.9em;
+}
+
+.clef {
+	font-family: MusiSync;
+	font-size: 75pt;
+	position: absolute;
+	top: -25px;
+}
+
+#controls {
+	float: left;
+	width: 300px;
+	height: 400px;
+	vertical-align: top;
+}
+
+fieldset {
+	border: 2px solid rgb(42, 1, 138);
+	border-radius: 8px;
+	padding: 6px;
+	margin-bottom: 1em;
+}
+
+.game-over {
+	font-size: 20px;
+ 	transition: transform 0.3s ease-in-out; /* Transition property for transform */
+	transform-origin: center;
+	z-index: 99;
+	font-family: Arial, Helvetica, sans-serif;
+	top: 30px;
+	left: 75px;
+	position: absolute;
+	display: none;
+}
+
+input, select {
+	margin-top: 0.6em;
+}
+
+.ledger {
+	position: relative;
+	height: 15px;
+	width: 25px;
+	visibility: hidden;
+	border-bottom: 2px solid black;
+}
+
+.ledgerGroup {
+	position: absolute;
+	display: block;
+	top: 87px;
+	left: 90px;
+}
+
+legend {
+	color: rgb(42, 1, 138);
+	font-weight: bold;
+}
+
+.line {
+	height: 15px;
+	width: 310px;
+	border-bottom: 2px solid black;
+}
+
+#mainDisplay {
+	top: 50px;
+	position: relative;
+	float: right;
+	vertical-align: top;
+	margin-right: 20em;
+}
+
+#messageDisplay {
+	visibility: hidden;
+	position: relative;
+	top: -20px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 14pt;
+}
+
+#musicContainer {
+	position: relative;
+}
+
+.musicNote {
+	position: absolute;
+	font-size: 60pt;
+	font-family: MusiSync;
+	top: 0px;
+	width: 20px;
+	margin: 0px;
+	z-index: 1
+}
+
+#noteDisplay {
+	display: none;
+	font-size: 16pt;
+	position: relative;
+	margin-right: 10px;
+	width: 140px;
+}
+
+#scoreBoard {
+	height: 50px;
+	width: 400px;
+	border-radius: 10px;
+	margin-bottom: 50px;
+	text-align: left;
+	margin-left: 420px;
+}
+
+.score {
+	height: 30px;
+	width: 80px;
+	border: 1px solid black;
+	border-radius: 5px;
+	display:inline-block;
+	margin-left: 15px;
+	margin-top: 6px;
+	text-align: center;
+}
+
+#scoreBoard {
+	position: relative;
+}
+
+.scoreNumber {
+	color: white;
+	font-weight: bold;
+	font-size: 1.5em;
+	font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+#startButton {
+	background-color: red;
+	color: white;
+	padding: 0.2em;
+	font-size: 1.4em;
+	font-weight: bold;
+	width: 6em;
+}
+
+#stats {
+	height: 30px;
+	margin-left: 15px;
+	margin-top: 12px;
+	text-align: left;
+}
+
+#stats span {
+	width: 40px;
+	display: inline-block;
+}
