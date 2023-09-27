@@ -11,7 +11,7 @@ It's pretty easy to intall and run: install node.js, copy a certificate into you
 
 THE DETAILS
 
-You may freely distribute this work and modify it, but you can't profit from it. I'm not looking to make any money, so if you want to use it in your music school or with students, you may use this version freely.  I just do not want someone taking this code, putting it up on a website and charging for it or even asking for donations...unless I do it. :)  I always intend for the code to be completely free. Read license.txt for the legalese.
+You may freely distribute this work and modify it, but you can't profit from it. I'm not looking to make any money, so if you want to use it in your music school or with students, you may use this version freely.  I just do not want someone taking this code, putting it up on a website and charging for it or even asking for donations...unless I do it. :)  I always intend for the code to be completely free. Read LICENSE for the legalese.
 
 To use:
 
