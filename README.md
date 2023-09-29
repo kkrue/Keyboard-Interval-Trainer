@@ -15,12 +15,13 @@ You may freely distribute this work and modify it, but you can't profit from it.
 
 To use:
 
-Install node.js on your computer (https://nodejs.org/).
+Install node.js on your computer (https://nodejs.org/) and ensure it's in your PATH.
+From a command prompt, inside the directory in which you installed the software, type: npm install
 You should install the included certificate localhost.crt in your certificate store so that the browser won't complain about an invalid certificate (see below).
 Plug in your MIDI keybpard to the computer and turn it on.
-From a command prompt, type: node index.js
+From the command prompt you already opened, type: node index.js
 You must use a browser that fully supports MIDI.  Firefox doesn't.  Chrome and Edge do.  Others?  Try your luck.  Point your browser to https://localhost:5000.
-Enjoy.
+Enjoy.  The next time you run it, all you need to do is execute node index.js.
 
 Installing the certificate on Windows 11:
 
