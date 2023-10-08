@@ -230,11 +230,13 @@ export class Setup {
 				$('#intervals').prop('disabled', true);
 			}
 			else if (selection === "interval") {
+				this.chord.clearChordLabel();
 				$('#intervals').prop('disabled', false);
 				$('#chordsGroup').prop('disabled', true);
 				$('#chordsGroup').find(':checkbox').prop('checked', false);
 			}
 			else {
+				this.chord.clearChordLabel();
 				$('#chordsGroup').prop('disabled', true);
 				$('#intervals').prop('disabled', true);
 				$('#chordsGroup').find(':checkbox').prop('checked', false);

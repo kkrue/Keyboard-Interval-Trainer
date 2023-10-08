@@ -1,9 +1,9 @@
-# Keyboard-Interval-Trainer 0.5.0
+# Keyboard-Interval-Trainer 0.5.1-alpha
 Practice notes and intervals on a MIDI keyboard
 
 I started this project when I wanted my son to practice reading music, but I found that there were no good programs for practicing intervals on a MIDI music keyboard.  I found note trainers, but they taught recognition of individual notes, which isn't too helpful.
 
-Thus I started this project and have been at it for some time.  The program is much more comprehensive than other others I've seen.  You can practice individual notes, intervals, chords, chord inversions, bass and treble clef, all the key signatures, and you can customize the system to produce notes over a range and set characteristics of the intervals (number of notes and spread).  It's not completely finished, and I need to work on some rather minor things, such as when notes are separated by only a step, one should be offset.  I'll get to those.
+Thus I started this project and have been at it for some time.  The program is much more comprehensive than other others I've seen.  You can practice individual notes, intervals, chords, chord inversions, bass and treble clef, all the key signatures, and you can customize the system to produce notes over a range and set characteristics of the intervals (number of notes and spread).  It's not completely finished, so check back for updates.
 
 I'm mostly a backend developer, so the JavaScript code isn't too elegant.  It doesn't use a fancy framework, I don't have a lot of tests, and it doesn't use webpack.  It does work pretty well, however, and is reasonably clean.
 
@@ -13,7 +13,7 @@ THE DETAILS
 
 You may freely distribute this work and modify it, but you can't profit from it. I'm not looking to make any money, so if you want to use it in your music school or with students, you may use this version freely.  I just do not want someone taking this code, putting it up on a website and charging for it or even asking for donations...unless I do it. :)  I always intend for the code to be completely free. Read LICENSE for the legalese.
 
-To use:
+TO USE:
 
 Install node.js on your computer (https://nodejs.org/) and ensure it's in your PATH.
 From a command prompt, inside the directory in which you installed the software, type: npm install
@@ -23,7 +23,21 @@ From the command prompt you already opened, type: node index.js
 You must use a browser that fully supports MIDI.  Firefox doesn't.  Chrome and Edge do.  Others?  Try your luck.  Point your browser to https://localhost:5000.
 Enjoy.  The next time you run it, all you need to do is execute node index.js.
 
-Installing the certificate on Windows 11:
+KNOWN ISSUES I PLAN TO FIX
+
+In chord mode, the chords are always the sharped note.  Chords are a work in progress.  MIDI always returns a sharped note, never a flat, and this issue with chords is
+partly due to that.  I plan to work on that next.
+
+Notes played out of range don't show.
+
+The range is deceptive for chords.  Due to their large span, the octave must be ignored.  If you pick C4-F4, you will get chords in the range of C-F.  I'll update the range.
+
+Proper placement of accidentals next to stacked notes isn't right.
+
+There are no exercises for chords beginning on sharped/flatted notes.  This will take a bit as I need to get the program working better with flats first.
+
+
+INSTALLING THE CERTIFICATE ON WINDOWS 11:
 
 Other OSes have a means of doing this.  Consult your favorite AI tool to see how to do it.
 1. Start button, type "cert" in the search and pick Manage Computer Certificates.

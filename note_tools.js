@@ -1,7 +1,6 @@
 export class NoteTools {
 	constructor() {
-		this.NOTEDOWN = "q";
-		this.NOTEUP = "ö";
+		this.NOTE_CHAR = "w";
 		this.SHARP = "B";
 		this.FLAT = "b";
 		this.NATURAL = "\u266E";
@@ -367,17 +366,16 @@ export class NoteTools {
 
 	showNotes(midiNotes, noteType, noteColor, keySig) {
 		const _this = this;
-		const stemsDown = this.#areStemsDown(midiNotes);
-
 		this.displayedNotes = [];
 
 		const oNotes = midiNotes.map(note => _this.createNoteObject(note));
+
+		this.#hOffsetStackedNotes(oNotes);
 
 		oNotes.forEach((note, i) => {
 			this.#showNote(
 				note,
 				i,
-				stemsDown,
 				noteType,
 				noteColor,
 				keySig
@@ -387,7 +385,7 @@ export class NoteTools {
 		this.#createLedgerLines(noteType, oNotes);
 	}
 
-	#showNote(oNote, noteNum, stemDown, noteType, noteColor, keySig) {
+	#showNote(oNote, noteNum, noteType, noteColor, keySig) {
 		let noteChar = document.getElementById(noteType + "_noteChar" + noteNum);
 		if (noteChar == null) {
 			return;
@@ -406,8 +404,30 @@ export class NoteTools {
 
 		oNote = this.#displayedAccidentalForKey(keySig, oNote);
 
-		noteChar = this.#displayNoteOnScreen(oNote, noteChar, stemDown, noteColor);
+		noteChar = this.#displayNoteOnScreen(oNote, noteChar, noteColor);
 		this.displayedNotes.push(noteChar);
+	}
+
+	#hOffsetStackedNotes(oNoteArr) {
+		let lastPosition = -1000;
+		let lastNoteWasStacked = false;
+
+		for (let oNote of oNoteArr) {
+			let notePos = parseInt(this.notePosition.get(oNote.rawNoteWithOctave));
+
+			let distance = Math.abs(notePos - lastPosition);
+
+			if (distance == 1 && !lastNoteWasStacked) {
+				lastNoteWasStacked = true;
+				oNote.hOffset = 22;
+			}
+			else {
+				lastNoteWasStacked = false;
+				oNote.hOffset = 0;
+			}
+
+			lastPosition = notePos;
+		}
 	}
 
 	#getAccidentalChar(oNote) {
@@ -429,10 +449,7 @@ export class NoteTools {
 		return accidental;
 	}
 
-	#displayNoteOnScreen(oNote, noteChar, stemDown, noteColor) {
-		const noteUp = "q";
-		const noteDown = "ö";
-
+	#displayNoteOnScreen(oNote, noteChar, noteColor) {
 		let pos = this.notePosition.get(oNote.displayedNote);
 
 		if (pos == null) {
@@ -440,29 +457,20 @@ export class NoteTools {
 		}
 		pos = pos * (this.STAFF_LINE_SPACING_PX / 2);
 
-		let offset = 0;
+		let offset = -45;
 
 		const accidental = this.#getAccidentalChar(oNote);
 		let fontSize = accidental == this.NATURAL ? "55%" : "normal"; // Naturals have to be shrunken as they are too big in the font.
-		let noteDirection = "";
-		let accidentalVOffset = 0;
-
-		if (stemDown) {
-			offset = 8;
-			accidentalVOffset = -50;
-			noteDirection = noteDown;
-		}
-		else {
-			offset = -48;
-			accidentalVOffset = 8;
-			noteDirection = noteUp;
-		}
 
 		noteChar.dataset.noteName = oNote.noteWithOctave;
-		noteChar.innerHTML = `<span style='position: relative; padding-right: 2px; top: ${accidentalVOffset}px; font-size: ${fontSize}'>${accidental}</span>${noteDirection}`;
+		noteChar.innerHTML = `<span style='position: relative; padding-right: 2px; font-size: ${fontSize}'>${accidental}</span>${this.NOTE_CHAR}`;
 		noteChar.style.color = noteColor;
 		noteChar.style.top = `${(pos * -1) + offset}px`;
 		noteChar.style.display = 'block';
+
+		if (parseInt(oNote.hOffset) > 0) {
+			noteChar.style.left = oNote.hOffset + "px";
+		}
 	}
 
 	getDisplayedNotes() {
@@ -558,39 +566,6 @@ export class NoteTools {
 			}
 			noteContainer.appendChild(noteDiv);
 		}
-	}
-
-	#areStemsDown(notes) {
-		const middleLine = 8;
-		let result = false;
-
-		notes = this.createMidiNotesFromObjects(notes);
-
-		if (notes.length == 1) {
-			let pos = this.notePosition.get(notes[0]);
-			if (pos > middleLine) {
-				result = true;
-			}
-		}
-		else  {
-			let posTop = this.notePosition.get(notes[0]);
-			let posBottom = this.notePosition.get(notes.length - 1);
-
-			let posTopDelta = Math.abs(middleLine - posTop);
-			let posBottomDelta = Math.abs(middleLine - posBottom);
-
-			if (posTop < 8) {
-				result = false;
-			}
-			else if (posTopDelta > posBottomDelta) {
-				result = true;
-			}
-			else {
-				result = true;
-			}
-		}
-
-		return result;
 	}
 
 	clearLedgerLines() {

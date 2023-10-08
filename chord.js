@@ -19,6 +19,7 @@ export class ChordCreator {
 		this.noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 		this.noteTools = noteTools;
+		this.currentChord = "";
 	}
 
 	getRandomChord(rootNote, inversions) {
@@ -41,9 +42,12 @@ export class ChordCreator {
 		let chord = this.create(rootNote, selectedChords[randomIndex]);
 		this.currentChord = rootNote.note + selectedChordName;
 		chord = this.invert(chord, inversions);
-		console.table(chord)
 
 		return chord;
+	}
+
+	clearChordLabel() {
+		this.currentChord = "";
 	}
 
 	getChordLabel() {

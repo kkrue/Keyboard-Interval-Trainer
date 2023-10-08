@@ -90,7 +90,7 @@ export class Game {
 	#displayNoteText() {
 		let noteDisplay = "";
 
-		if (this.currentInterval != undefined && this.chordCreator.getChordLabel() !== undefined) {
+		if (this.currentInterval != undefined && this.chordCreator.getChordLabel() !== "") {
 			noteDisplay = this.chordCreator.getChordLabel();
 		}
 		else {

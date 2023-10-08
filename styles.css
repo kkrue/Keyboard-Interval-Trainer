@@ -29,6 +29,11 @@ fieldset {
 	margin-bottom: 1em;
 }
 
+.flip_H {
+	transform: scale(-1, 1);
+	left:56px;
+}
+
 .game-over {
 	font-size: 20px;
  	transition: transform 0.3s ease-in-out; /* Transition property for transform */
@@ -46,9 +51,10 @@ input, select {
 }
 
 .ledger {
+	left: 2px;
 	position: relative;
 	height: 15px;
-	width: 25px;
+	width: 30px;
 	visibility: hidden;
 	border-bottom: 2px solid black;
 }
@@ -93,7 +99,7 @@ legend {
 
 .musicNote {
 	position: absolute;
-	font-size: 60pt;
+	font-size: 58pt;
 	font-family: MusiSync;
 	top: 0px;
 	width: 20px;
