@@ -1,4 +1,4 @@
-# Keyboard-Interval-Trainer 0.5.1-alpha
+# Keyboard-Interval-Trainer 0.5.2-alpha
 Practice notes and intervals on a MIDI keyboard
 
 I started this project when I wanted my son to practice reading music, but I found that there were no good programs for practicing intervals on a MIDI music keyboard.  I found note trainers, but they taught recognition of individual notes, which isn't too helpful.
