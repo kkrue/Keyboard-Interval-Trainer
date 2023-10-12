@@ -1,18 +1,54 @@
 export class ChordCreator {
 	constructor(noteTools) {
 		this.chordTypes = {
-			maj: [0, 4, 7],
-			min: [0, 3, 7],
-			aug: [0, 4, 8],
-			dim: [0, 3, 6],
-			sus2: [0, 2, 7],
-			sus4: [0, 5, 7],
-			maj7: [0, 4, 7, 11],
-			min7: [0, 3, 7, 10],
-			dom7: [0, 4, 7, 10],
-			dim7: [0, 3, 6, 9],
-			maj6: [0, 4, 7, 9],
-			min6: [0, 3, 7, 9]
+			maj: {
+				intervals: [0, 4, 7],
+				accidental: "sharp"
+			},
+			min: {
+				intervals: [0, 3, 7],
+				accidental: "flat"
+			},
+			aug: {
+				intervals: [0, 4, 8],
+				accidental: "sharp"
+			},
+			dim: {
+				intervals: [0, 3, 6],
+				accidental: "flat"
+			},
+			sus2: {
+				intervals: [0, 2, 7],
+				accidental: "sharp"
+			},
+			sus4: {
+				intervals: [0, 5, 7],
+				accidental: "sharp"
+			},
+			maj7: {
+				intervals: [0, 4, 7, 11],
+				accidental: "sharp"
+			},
+			min7: {
+				intervals: [0, 3, 7, 10],
+				accidental: "flat"
+			},
+			dom7: {
+				intervals: [0, 4, 7, 10],
+				accidental: "flat"
+			},
+			dim7: {
+				intervals: [0, 3, 6, 9],
+				accidental: "flat"
+			},
+			maj6: {
+				intervals: [0, 4, 7, 9],
+				accidental: "sharp"
+			},
+			min6: {
+				intervals: [0, 3, 7, 9],
+				accidental: "flat"
+			}
 		};
 
 		this.keyboardKeys = this.#generateKeyboardKeys(9);
@@ -39,7 +75,7 @@ export class ChordCreator {
 		const randomIndex = Math.floor(Math.random() * selectedChords.length);
 		const selectedChordName = selectedChords[randomIndex];
 
-		let chord = this.create(rootNote, selectedChords[randomIndex]);
+		let chord = this.#create(rootNote, selectedChords[randomIndex]);
 		this.currentChord = rootNote.note + selectedChordName;
 		chord = this.invert(chord, inversions);
 
@@ -54,7 +90,7 @@ export class ChordCreator {
 		return this.currentChord;
 	}
 
-	create(rootNoteObj, chordType) {
+	#create(rootNoteObj, chordType) {
 		const chordNotes = this.#getChordNotes(rootNoteObj.midiNote, chordType);
 		this.noteTools.numNotes = chordNotes.length;
 
@@ -95,7 +131,7 @@ export class ChordCreator {
 
 	#getChordNotes(rootNote, chordType) {
 		const chordIntervals = this.#getChordIntervals(chordType);
-		const chordNotes = this.#buildChordNotes(rootNote, chordIntervals);
+		const chordNotes = this.#buildChordNotes(rootNote, chordIntervals, chordType);
 
 		return chordNotes;
 	}
@@ -109,10 +145,11 @@ export class ChordCreator {
 	}
 
 	#getChordIntervals(chordType) {
-		return this.chordTypes[chordType] || [];
+		const chordData = this.chordTypes[chordType];
+		return chordData ? chordData.intervals : [];
 	}
 
-	#buildChordNotes(rootNote, chordIntervals) {
+	#buildChordNotes(rootNote, chordIntervals, chordType) {
 		const octave = parseInt(rootNote.slice(-1));
 		const noteLetter = rootNote.slice(0, -1);
 		const rootIndex = this.noteNames.indexOf(noteLetter);
@@ -120,10 +157,17 @@ export class ChordCreator {
 			return [];
 		}
 
+		const chordData = this.chordTypes[chordType];
+
 		let chordNotes = chordIntervals.map(interval => this.noteNames[(rootIndex + interval) % 12]);
 		chordNotes = this.#applyOctave(chordNotes, octave);
+		const oArrChordNotes = chordNotes.map(this.noteTools.createNoteObject);
 
-		return chordNotes;
+		if (chordData.accidental == "flat") {
+			chordNotes = oArrChordNotes.map(oNote => this.noteTools.getFlatVersionOfSharp(oNote));
+		}
+
+		return oArrChordNotes;
 	}
 
 	#applyOctave(notes, octave) {

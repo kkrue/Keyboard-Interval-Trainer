@@ -73,7 +73,7 @@ legend {
 
 .line {
 	height: 15px;
-	width: 310px;
+	width: 380px;
 	border-bottom: 2px solid black;
 }
 
@@ -82,7 +82,7 @@ legend {
 	position: relative;
 	float: right;
 	vertical-align: top;
-	margin-right: 20em;
+	margin-right: 15em;
 }
 
 #messageDisplay {

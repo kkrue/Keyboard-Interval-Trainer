@@ -265,6 +265,32 @@ export class NoteTools {
 		return adjustedNote;
 	}
 
+	// Instead of displaying a sharp, get the flat version. The incoming note is expected to be a sharp.
+	getFlatVersionOfSharp(oNote) {
+		const midiNote = oNote.midiNote;
+
+		if (oNote.accidental != "#") {
+			return oNote;
+		}
+		else if (midiNote == "C#") {
+			oNote.displayedNote = "D";
+		}
+		else if (midiNote == "D#") {
+			oNote.displayedNote = "E";
+		}
+		else if (midiNote == "F#") {
+			oNote.displayedNote = "G";
+		}
+		else if (midiNote == "G#") {
+			oNote.displayedNote = "A";
+		}
+		else if (midiNote == "A#") {
+			oNote.displayedNote = "B";
+		}
+
+		oNote.displayedAccidental = "f";
+	}
+
 	#adjustNoteForKeySignature(sharpOrFlat, oNote) {
 		let adjustedNote = oNote.letter;
 		let octave = oNote.octave;
@@ -451,6 +477,8 @@ export class NoteTools {
 
 	#displayNoteOnScreen(oNote, noteChar, noteColor) {
 		let pos = this.notePosition.get(oNote.displayedNote);
+		let accidentalOffset = "0";
+		let accidental = this.#getAccidentalChar(oNote);
 
 		if (pos == null) {
 			return;
@@ -459,7 +487,12 @@ export class NoteTools {
 
 		let offset = -45;
 
-		const accidental = this.#getAccidentalChar(oNote);
+		if (parseInt(oNote.hOffset) > 0) { // This happens when notes are too close vertically.
+			accidentalOffset = "-30";
+			noteChar.style.left = oNote.hOffset + "px";
+			accidental = `<span style="position: relative; left: -18px">${accidental}</span>`;
+		}
+
 		let fontSize = accidental == this.NATURAL ? "55%" : "normal"; // Naturals have to be shrunken as they are too big in the font.
 
 		noteChar.dataset.noteName = oNote.noteWithOctave;
@@ -467,10 +500,6 @@ export class NoteTools {
 		noteChar.style.color = noteColor;
 		noteChar.style.top = `${(pos * -1) + offset}px`;
 		noteChar.style.display = 'block';
-
-		if (parseInt(oNote.hOffset) > 0) {
-			noteChar.style.left = oNote.hOffset + "px";
-		}
 	}
 
 	getDisplayedNotes() {
@@ -526,9 +555,14 @@ export class NoteTools {
 	turnNotesOff(noteType) {
 		const idString = noteType + "_noteChar";
 		const notes = document.querySelectorAll(`[id^='${idString}']`);
+
+		this.#resetNotePosition(noteType);
+
 		if (notes != null) {
 			for (let note of notes) {
+				note.style.left = "0px";
 				note.style.display = 'none';
+				note
 			}
 		}
 	}
@@ -545,14 +579,7 @@ export class NoteTools {
 		noteContainer.setAttribute("id", noteType);
 		noteContainer.style.position = "absolute";
 
-		if (noteType.indexOf("user") > -1) {
-			noteContainer.style.left = this.NOTE_LEFT_OFFSET + 35 + "px";
-			noteContainer.style.color = "red";
-		}
-		else {
-			noteContainer.style.color = "black";
-			noteContainer.style.left = this.NOTE_LEFT_OFFSET + "px";
-		}
+		this.#resetNotePosition(noteType, noteContainer);
 
 		for (let i = 0; i < this.numNotes; i++) {
 			let noteDiv = document.createElement("div");
@@ -565,6 +592,21 @@ export class NoteTools {
 				musicContainer.appendChild(noteContainer);
 			}
 			noteContainer.appendChild(noteDiv);
+		}
+	}
+
+	#resetNotePosition(noteType, noteContainer) {
+		if (noteContainer == null) {
+			noteContainer = document.getElementById(noteType);
+		}
+
+		if (noteType.indexOf("user") > -1) {
+			noteContainer.style.left = this.NOTE_LEFT_OFFSET + 80 + "px";
+			noteContainer.style.color = "red";
+		}
+		else {
+			noteContainer.style.color = "black";
+			noteContainer.style.left = this.NOTE_LEFT_OFFSET + "px";
 		}
 	}
 

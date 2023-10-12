@@ -1,4 +1,4 @@
-# Keyboard-Interval-Trainer 0.5.2-alpha
+# Keyboard-Interval-Trainer 0.5.3-alpha
 Practice notes and intervals on a MIDI keyboard
 
 I started this project when I wanted my son to practice reading music, but I found that there were no good programs for practicing intervals on a MIDI music keyboard.  I found note trainers, but they taught recognition of individual notes, which isn't too helpful.
@@ -25,14 +25,14 @@ TO USE:
 
 KNOWN ISSUES I PLAN TO FIX
 
+First of all, I publish fixes about once per week at this early stage, so check back often.  Download the trunk if you want the very latest fixes.
+
 In chord mode, the chords are always the sharped note.  Chords are a work in progress.  MIDI always returns a sharped note, never a flat, and this issue with chords is
 partly due to that.  I plan to work on that next.
 
 Notes played out of range don't show.
 
 The range is deceptive for chords.  Due to their large span, the octave must be ignored.  If you pick C4-F4, you will get chords in the range of C-F.  I'll update the range.
-
-Proper placement of accidentals next to stacked notes isn't right.
 
 There are no exercises for chords beginning on sharped/flatted notes.  This will take a bit as I need to get the program working better with flats first.
 
