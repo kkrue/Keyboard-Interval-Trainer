@@ -82,6 +82,7 @@ export class Game {
 			);
 		}
 
+		debugger
 		this.noteTools.showNotes(this.currentInterval, "musicNote");
 		this.#displayNoteText(this.currentInterval);
 

@@ -64,9 +64,7 @@ export class Setup {
 		this.loadFormData();
 		this.restoreScreenState();
 		this.setUpEvents();
-
-		let data = this.convertFormToJSON(document.frmControls);
-		this.noteTools.setControlData(data);
+		this.setFormData();
 	}
 
 	fillRangeSelects(clef) {
@@ -228,18 +226,23 @@ export class Setup {
 			if (selection === "chords") {
 				$('#chordsGroup').prop('disabled', false);
 				$('#intervals').prop('disabled', true);
+				$("#keySignature").val("0#");
+				$('#keySignature').trigger('change');
+				$('#keySignature').prop('disabled', true);
 			}
 			else if (selection === "interval") {
 				this.chord.clearChordLabel();
 				$('#intervals').prop('disabled', false);
 				$('#chordsGroup').prop('disabled', true);
 				$('#chordsGroup').find(':checkbox').prop('checked', false);
+				$('#keySignature').prop('disabled', false);
 			}
 			else {
 				this.chord.clearChordLabel();
 				$('#chordsGroup').prop('disabled', true);
 				$('#intervals').prop('disabled', true);
 				$('#chordsGroup').find(':checkbox').prop('checked', false);
+				$('#keySignature').prop('disabled', false);
 			}
 
 			_this.setFormData();
@@ -279,6 +282,11 @@ export class Setup {
 
 	setFormData() {
 		const data = this.convertFormToJSON(document.frmControls);
+
+		if ($("#keySignature").is(':disabled')) {
+			data.keySignature = "0#";
+		}
+
 		this.noteTools.setControlData(data);
 
 		return data;

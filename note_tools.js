@@ -267,24 +267,24 @@ export class NoteTools {
 
 	// Instead of displaying a sharp, get the flat version. The incoming note is expected to be a sharp.
 	getFlatVersionOfSharp(oNote) {
-		const midiNote = oNote.midiNote;
+		const note = oNote.note;
 
 		if (oNote.accidental != "#") {
 			return oNote;
 		}
-		else if (midiNote == "C#") {
+		else if (note == "C#") {
 			oNote.displayedNote = "D";
 		}
-		else if (midiNote == "D#") {
+		else if (note == "D#") {
 			oNote.displayedNote = "E";
 		}
-		else if (midiNote == "F#") {
+		else if (note == "F#") {
 			oNote.displayedNote = "G";
 		}
-		else if (midiNote == "G#") {
+		else if (note == "G#") {
 			oNote.displayedNote = "A";
 		}
-		else if (midiNote == "A#") {
+		else if (note == "A#") {
 			oNote.displayedNote = "B";
 		}
 
