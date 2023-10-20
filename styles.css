@@ -50,6 +50,10 @@ input, select {
 	margin-top: 0.6em;
 }
 
+.smallText {
+	font-size: 10px;
+}
+
 .ledger {
 	left: 2px;
 	position: relative;

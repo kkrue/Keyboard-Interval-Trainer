@@ -150,22 +150,26 @@
 			function testChordCreator() {
 				describe('create', () => {
 					it('Test create chord', () => {
-						expect(chordCreator.create(createNoteObj('C4'), 'maj')).toEqualArray(['C4', 'E4', 'G4']);
-						expect(chordCreator.create(createNoteObj('G4'), 'maj')).toEqualArray(['G4', 'B4', 'D5']);
-						expect(chordCreator.create(createNoteObj('G4'), 'min')).toEqualArray(['G4', 'A#4', 'D5']);
+						let chord1 = chordCreator.create(createNoteObj('C4'), 'maj')
+						let chord2 = chordCreator.create(createNoteObj('G4'), 'maj')
+						let chord3 = chordCreator.create(createNoteObj('G4'), 'min')
+
+						expect(getArrayOfNotes(chord1)).toEqualArray(['C4', 'E4', 'G4']);
+						expect(getArrayOfNotes(chord2)).toEqualArray(['G4', 'B4', 'D5']);
+						expect(getArrayOfNotes(chord3)).toEqualArray(['G4', 'A#4', 'D5']);
 					});
 				});
 
 				describe('Inversions', () => {
 					it('First inversion', () => {
-						expect(chordCreator.inversion(createNoteObj('G4'), 'maj', 1)).toEqualArray(['B4', 'D5', 'G5']);
-						expect(chordCreator.inversion(createNoteObj('C3'), 'maj', 1)).toEqualArray(['E3', 'G3', 'C4']);
-						expect(chordCreator.inversion(createNoteObj('B4'), 'maj', 1)).toEqualArray(['D#5', 'F#5', 'B5']);
-						expect(chordCreator.inversion(createNoteObj('G3'), 'min6', 1)).toEqualArray(['A#3', 'D4', 'E4', 'G4']);
+						expect(chordCreator.invert(['G4', 'B4', 'D5'], 1)).toEqualArray(['B4', 'D5', 'G5']);
+						expect(chordCreator.invert(['C3', 'E3', 'G3'], 1)).toEqualArray(['E3', 'G3', 'C4']);
+						expect(chordCreator.invert(['B4','D#5','F#5'], 1)).toEqualArray(['D#5', 'F#5', 'B5']);
+						expect(chordCreator.invert(['G3', 'A#3', 'D4', 'E4'], 1)).toEqualArray(['A#3', 'D4', 'E4', 'G4']);
 					});
 
 					it('Second inversion', () => {
-						expect(chordCreator.inversion(createNoteObj('G4'), 'maj', 2)).toEqualArray(['D5', 'G5', 'B5']);
+						expect(chordCreator.invert(['G4', 'B4', 'D5'], 2)).toEqualArray(['D5', 'G5', 'B5']);
 					});
 				});
 			}

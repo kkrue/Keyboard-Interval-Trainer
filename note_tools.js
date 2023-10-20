@@ -266,29 +266,36 @@ export class NoteTools {
 	}
 
 	// Instead of displaying a sharp, get the flat version. The incoming note is expected to be a sharp.
-	getFlatVersionOfSharp(oNote) {
-		const note = oNote.note;
+	getFlatVersionOfSharp(origNote) {
+		const note = origNote.note;
+		let newNoteLetter = "";
 
-		if (oNote.accidental != "#") {
-			return oNote;
+		if (origNote.accidental != "#") {
+			return origNote;
 		}
-		else if (note == "C#") {
-			oNote.displayedNote = "D";
+
+		if (note == "C#") {
+			newNoteLetter = "D";
 		}
 		else if (note == "D#") {
-			oNote.displayedNote = "E";
+			newNoteLetter = "E";
 		}
 		else if (note == "F#") {
-			oNote.displayedNote = "G";
+			newNoteLetter = "G";
 		}
 		else if (note == "G#") {
-			oNote.displayedNote = "A";
+			newNoteLetter = "A";
 		}
 		else if (note == "A#") {
-			oNote.displayedNote = "B";
+			newNoteLetter = "B";
 		}
 
+		const oNote = this.createNoteObject(newNoteLetter + origNote.octave);
+		oNote.accidental = "f";
 		oNote.displayedAccidental = "f";
+		oNote.displayedNote = oNote.note;
+
+		return oNote;
 	}
 
 	#adjustNoteForKeySignature(sharpOrFlat, oNote) {
@@ -390,11 +397,12 @@ export class NoteTools {
 		return noteObj;
 	}
 
-	showNotes(midiNotes, noteType, noteColor, keySig) {
+	showNotes(notes, noteType, noteColor, keySig) {
 		const _this = this;
 		this.displayedNotes = [];
 
-		const oNotes = midiNotes.map(note => _this.createNoteObject(note));
+		// This does nothing if the notes are already objects.
+		const oNotes = notes.map(note => _this.createNoteObject(note));
 
 		this.#hOffsetStackedNotes(oNotes);
 

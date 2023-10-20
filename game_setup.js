@@ -21,6 +21,7 @@ export class Setup {
 		}
 	}
 
+	// Keyboard input begins here.
 	onEnabled() {
 		if (WebMidi.inputs.length >= 1) {
 			WebMidi.inputs.forEach((device, index) => {
@@ -40,6 +41,8 @@ export class Setup {
 				return;
 			}
 
+			// Input is buffered so that it will accumulate notes.  Two notes within a short timepan
+			// are combined and considered as multiple keys held together.
 			this.keyboard.bufferInput(e.note.identifier, this.game.judgeInput);
 		});
 	}
@@ -255,6 +258,27 @@ export class Setup {
 		$("#numNoteTests").on("change", () => {
 			_this.setFormData();
 			_this.game.reset();
+		});
+
+		const chordCheckboxes = $('input[id^="chordType"]');
+
+		chordCheckboxes.on('change', function() {
+			const selectedChord = $(this);
+			const selectedChordId = $(this).prop("id");
+			const selectedChordType = _this.chord.getKeyType(selectedChord.val());
+
+			chordCheckboxes.each(function() {
+				const currentChordId = $(this).prop("id");
+
+				if (selectedChordId != currentChordId) {
+					const chordTypeInList = $(this).val();
+					const chordTypeInListKeyType = _this.chord.getKeyType(chordTypeInList);
+
+					if (chordTypeInListKeyType !== selectedChordType && $(this).is(':checked')) {
+						selectedChord.prop('checked', false);
+					}
+				}
+			});
 		});
 	}
 

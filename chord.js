@@ -3,51 +3,51 @@ export class ChordCreator {
 		this.chordTypes = {
 			maj: {
 				intervals: [0, 4, 7],
-				accidental: "sharp"
+				keyType: "sharp"
 			},
 			min: {
 				intervals: [0, 3, 7],
-				accidental: "flat"
+				keyType: "flat"
 			},
 			aug: {
 				intervals: [0, 4, 8],
-				accidental: "sharp"
+				keyType: "sharp"
 			},
 			dim: {
 				intervals: [0, 3, 6],
-				accidental: "flat"
+				keyType: "flat"
 			},
 			sus2: {
 				intervals: [0, 2, 7],
-				accidental: "sharp"
+				keyType: "sharp"
 			},
 			sus4: {
 				intervals: [0, 5, 7],
-				accidental: "sharp"
+				keyType: "sharp"
 			},
 			maj7: {
 				intervals: [0, 4, 7, 11],
-				accidental: "sharp"
+				keyType: "sharp"
 			},
 			min7: {
 				intervals: [0, 3, 7, 10],
-				accidental: "flat"
+				keyType: "flat"
 			},
 			dom7: {
 				intervals: [0, 4, 7, 10],
-				accidental: "flat"
+				keyType: "flat"
 			},
 			dim7: {
 				intervals: [0, 3, 6, 9],
-				accidental: "flat"
+				keyType: "flat"
 			},
 			maj6: {
 				intervals: [0, 4, 7, 9],
-				accidental: "sharp"
+				keyType: "sharp"
 			},
 			min6: {
 				intervals: [0, 3, 7, 9],
-				accidental: "flat"
+				keyType: "flat"
 			}
 		};
 
@@ -56,6 +56,34 @@ export class ChordCreator {
 
 		this.noteTools = noteTools;
 		this.currentChord = "";
+	}
+
+	getKeyType(chordType) {
+		const chordData = this.chordTypes[chordType];
+
+		if (chordData.keyType == "flat") {
+			return "flat";
+		}
+
+		return "sharp";
+	}
+
+	// Chords cannot be a mix of sharp and flat keys.  If one is picked, all others must be of the same type.
+	keyTypeSelected() {
+		let returnValue = "";
+		const _this = this;
+
+		$('input[id^="chordType"]').each(function() {
+			if ($(this).is(':checked')) {
+				let value = $(this).val();
+				let keyType = _this.getKeyType(value);
+
+				returnValue = keyType;
+				return false;
+			}
+		});
+
+		return returnValue;
 	}
 
 	getRandomChord(rootNote, inversions) {
@@ -75,7 +103,7 @@ export class ChordCreator {
 		const randomIndex = Math.floor(Math.random() * selectedChords.length);
 		const selectedChordName = selectedChords[randomIndex];
 
-		let chord = this.#create(rootNote, selectedChords[randomIndex]);
+		let chord = this.create(rootNote, selectedChords[randomIndex]);
 		this.currentChord = rootNote.note + selectedChordName;
 		chord = this.invert(chord, inversions);
 
@@ -90,7 +118,7 @@ export class ChordCreator {
 		return this.currentChord;
 	}
 
-	#create(rootNoteObj, chordType) {
+	create(rootNoteObj, chordType) {
 		const chordNotes = this.#getChordNotes(rootNoteObj.midiNote, chordType);
 		this.noteTools.numNotes = chordNotes.length;
 
@@ -161,10 +189,10 @@ export class ChordCreator {
 
 		let chordNotes = chordIntervals.map(interval => this.noteNames[(rootIndex + interval) % 12]);
 		chordNotes = this.#applyOctave(chordNotes, octave);
-		const oArrChordNotes = chordNotes.map(this.noteTools.createNoteObject);
+		let oArrChordNotes = chordNotes.map(this.noteTools.createNoteObject);
 
-		if (chordData.accidental == "flat") {
-			chordNotes = oArrChordNotes.map(oNote => this.noteTools.getFlatVersionOfSharp(oNote));
+		if (chordData.keyType == "flat") {
+			oArrChordNotes = oArrChordNotes.map(oNote => this.noteTools.getFlatVersionOfSharp(oNote));
 		}
 
 		return oArrChordNotes;

@@ -38,7 +38,7 @@ export class NoteGenerator {
 	 * @param {number} minSpread - The minimum distance in half steps (semitones) between notes (e.g., 2 is the distance between C and D).
 	 * @param {number} maxSpread - The maxnimum distance in half steps (semitones) between notes.
 	 *
-	 * @returns {array} - An array of numNotesInInterval length containing note names.
+	 * @returns {array} - An array of numNotesInInterval length containing note objects.
 	 */
 	getRandomNoteInterval(numNotesInInterval, startRange, endRange, minSpread, maxSpread) {
 		const noteNumbers = this.noteTools.getNotesByNumber();
@@ -63,7 +63,7 @@ export class NoteGenerator {
 
 		this.lastInterval = interval;
 
-		return interval;
+		return interval.map(note => this.noteTools.createNoteObject(note));
 	}
 
 	#getRandomNumber(min, max) {
