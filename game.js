@@ -68,7 +68,6 @@ export class Game {
 		else if (controlData.noteGroups == "chords") {
 			let rootNote = this.noteGenerator.getRandomNote(startRange, endRange);
 			chord = this.chordCreator.getRandomChord(rootNote, parseInt(controlData.chordInversions));
-			//chord = this.noteTools.createMidiNotesFromObjects(chord);
 
 			this.currentInterval = chord;
 		}

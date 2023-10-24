@@ -27,15 +27,9 @@ KNOWN ISSUES I PLAN TO FIX
 
 First of all, I publish fixes about once per week at this early stage, so check back often.  Download the trunk if you want the very latest fixes.
 
-In chord mode, the chords are always the sharped note.  Chords are a work in progress.  MIDI always returns a sharped note, never a flat, and this issue with chords is
-partly due to that.  I plan to work on that next.
-
-Notes played out of range don't show.
-
-The range is deceptive for chords.  Due to their large span, the octave must be ignored.  If you pick C4-F4, you will get chords in the range of C-F.  I'll update the range.
-
-There are no exercises for chords beginning on sharped/flatted notes.  This will take a bit as I need to get the program working better with flats first.
-
+- Notes played out of range don't show.
+- The range is deceptive for chords.  Due to their large span, the octave selection must be ignored.  If you pick C4-F4, you will get chords in the range of C-F.
+- There are no exercises for chords beginning on sharped/flatted notes.  This will take a bit of work.
 
 INSTALLING THE CERTIFICATE ON WINDOWS 11:
 

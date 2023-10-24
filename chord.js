@@ -58,7 +58,7 @@ export class ChordCreator {
 		this.currentChord = "";
 	}
 
-	getKeyType(chordType) {
+	getKeyType(chordType = this.currentChord) {
 		const chordData = this.chordTypes[chordType];
 
 		if (chordData.keyType == "flat") {
@@ -185,15 +185,9 @@ export class ChordCreator {
 			return [];
 		}
 
-		const chordData = this.chordTypes[chordType];
-
 		let chordNotes = chordIntervals.map(interval => this.noteNames[(rootIndex + interval) % 12]);
 		chordNotes = this.#applyOctave(chordNotes, octave);
 		let oArrChordNotes = chordNotes.map(this.noteTools.createNoteObject);
-
-		if (chordData.keyType == "flat") {
-			oArrChordNotes = oArrChordNotes.map(oNote => this.noteTools.getFlatVersionOfSharp(oNote));
-		}
 
 		return oArrChordNotes;
 	}

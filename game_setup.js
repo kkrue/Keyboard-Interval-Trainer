@@ -1,16 +1,16 @@
 import { ChordCreator } from './chord.js';
 import { Game } from './game.js';
+import { Keyboard } from './keyboard.js';
 import { NoteTools } from './note_tools.js';
 import { NoteGenerator } from './note_generator.js';
-import { Keyboard } from './keyboard.js';
 
 export class Setup {
 	constructor() {
 		this.noteTools = new NoteTools();
 		this.noteGenerator = new NoteGenerator(this.noteTools);
 		this.chord = new ChordCreator(this.noteTools);
-		this.game = new Game(this.noteTools, this.noteGenerator, this.chord);
 		this.keyboard = new Keyboard(this.noteTools);
+		this.game = new Game(this.noteTools, this.noteGenerator, this.chord);
 
 		this.onEnabled = this.onEnabled.bind(this);
 

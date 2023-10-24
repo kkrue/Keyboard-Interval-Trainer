@@ -1,3 +1,5 @@
+import { KeySignature } from './key_sig.js';
+
 export class NoteTools {
 	constructor() {
 		this.NOTE_CHAR = "w";
@@ -18,6 +20,8 @@ export class NoteTools {
 		this.numNotes = 4;
 		this.noteGroupId = 0;
 		this.displayedNotes = [];
+
+		this.keySig = new KeySignature(this);
 	}
 
 	#generateKeySigMap(clef) {
@@ -123,24 +127,24 @@ export class NoteTools {
 			this.notesByPosition.set(value, key);
 		}
 
-		this.sharpened = new Map();
-		this.sharpened.set("C", "C#");
-		this.sharpened.set("D", "D#");
-		this.sharpened.set("E", "F");
-		this.sharpened.set("F", "F#");
-		this.sharpened.set("G", "G#");
-		this.sharpened.set("A", "A#");
-		this.sharpened.set("B", "C");
+		this.sharped = new Map();
+		this.sharped.set("C", "C#");
+		this.sharped.set("D", "D#");
+		this.sharped.set("E", "F");
+		this.sharped.set("F", "F#");
+		this.sharped.set("G", "G#");
+		this.sharped.set("A", "A#");
+		this.sharped.set("B", "C");
 
 		// Midi always shows flats as the equivalent sharp, so we go with that.
-		this.flattened = new Map();
-		this.flattened.set("C", "B");
-		this.flattened.set("D", "C#");
-		this.flattened.set("E", "D#");
-		this.flattened.set("F", "E");
-		this.flattened.set("G", "F#");
-		this.flattened.set("A", "G#");
-		this.flattened.set("B", "A#");
+		this.flatted = new Map();
+		this.flatted.set("C", "B");
+		this.flatted.set("D", "C#");
+		this.flatted.set("E", "D#");
+		this.flatted.set("F", "E");
+		this.flatted.set("G", "F#");
+		this.flatted.set("A", "G#");
+		this.flatted.set("B", "A#");
 
 		this.controlData;
 	}
@@ -293,7 +297,7 @@ export class NoteTools {
 		const oNote = this.createNoteObject(newNoteLetter + origNote.octave);
 		oNote.accidental = "f";
 		oNote.displayedAccidental = "f";
-		oNote.displayedNote = oNote.note;
+		oNote.displayedNote = oNote.noteWithOctave;
 
 		return oNote;
 	}
@@ -307,14 +311,14 @@ export class NoteTools {
 				octave++;
 			}
 
-			adjustedNote = this.sharpened.get(oNote.letter) + octave;
+			adjustedNote = this.sharped.get(oNote.letter) + octave;
 		}
 		else if (sharpOrFlat === "f") {
 			if (oNote.letter === "C") {
 				octave--;
 			}
 
-			adjustedNote = this.flattened.get(oNote.letter) + octave;
+			adjustedNote = this.flatted.get(oNote.letter) + octave;
 		}
 
 		const newNote = this.createNoteObject(adjustedNote);
@@ -484,8 +488,11 @@ export class NoteTools {
 	}
 
 	#displayNoteOnScreen(oNote, noteChar, noteColor) {
+		if (this.keySig.getKeySignatureType() == "flat" && oNote.accidental == "#") {
+			oNote = this.getFlatVersionOfSharp(oNote);
+		}
+
 		let pos = this.notePosition.get(oNote.displayedNote);
-		let accidentalOffset = "0";
 		let accidental = this.#getAccidentalChar(oNote);
 
 		if (pos == null) {
@@ -496,7 +503,6 @@ export class NoteTools {
 		let offset = -45;
 
 		if (parseInt(oNote.hOffset) > 0) { // This happens when notes are too close vertically.
-			accidentalOffset = "-30";
 			noteChar.style.left = oNote.hOffset + "px";
 			accidental = `<span style="position: relative; left: -18px">${accidental}</span>`;
 		}
