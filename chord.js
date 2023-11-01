@@ -89,15 +89,20 @@ export class ChordCreator {
 	getRandomChord(rootNote, inversions) {
 		const selectedChords = [];
 		const allCheckedChordTypes = $('input[id^="chordType"]:checked');
+		const controlData = this.noteTools.getControlData();
 
 		if (allCheckedChordTypes.length == 0) {
-			$('input[id="chordTypeMaj"]').prop('checked', true);
+			$('input[id="chordTypeMaj"]').prop('checked', true); // Change to use controlData
 			selectedChords.push("maj");
 		}
 		else {
 			allCheckedChordTypes.each((index, element) => {
 				selectedChords.push($(element).val());
 			});
+		}
+
+		if (controlData.rootSharpsFlats == "true") {
+			rootNote = this.#getRandomSharp(rootNote);
 		}
 
 		const randomIndex = Math.floor(Math.random() * selectedChords.length);
@@ -108,6 +113,13 @@ export class ChordCreator {
 		chord = this.invert(chord, inversions);
 
 		return chord;
+	}
+
+	#getRandomSharp(rootNote) {
+		let isSharp = Boolean(Math.floor(Math.random() * 2));
+		rootNote = isSharp ? this.noteTools.sharpNote(rootNote) : rootNote;
+
+		return rootNote;
 	}
 
 	clearChordLabel() {
@@ -125,22 +137,22 @@ export class ChordCreator {
 		return chordNotes;
 	}
 
-	invert(chordNotes, inversionNumber) {
+	invert(chordNoteObjs, inversionNumber) {
 		this.inversionLabel = "";
 
 		if (inversionNumber == 0) {
-			return chordNotes;
+			return chordNoteObjs;
 		}
 
 		for (let i = 0; i < inversionNumber; i++) {
-			let shiftedNote = chordNotes.shift();
-			chordNotes.push(this.#adjustOctave(shiftedNote, 1));
+			let shiftedNote = chordNoteObjs.shift();
+			chordNoteObjs.push(this.#adjustOctave(shiftedNote, 1));
 		}
 
-		const rootNote = this.noteTools.createNoteObject(chordNotes[0]);
+		const rootNote = this.noteTools.createNoteObject(chordNoteObjs[0]);
 		this.currentChord = this.currentChord + " / " + rootNote.note;
 
-		return chordNotes;
+		return chordNoteObjs;
 	}
 
 	#generateKeyboardKeys(octaveRange) {
@@ -165,11 +177,8 @@ export class ChordCreator {
 	}
 
 	#adjustOctave(note, amount) {
-		const noteLetter = note.slice(0, -1);
-		const octave = parseInt(note.slice(-1));
-
-		const adjustedOctave = octave + amount;
-	  	return noteLetter + adjustedOctave;
+		const adjustedOctave = note.octave + amount;
+	  	return note.letter + adjustedOctave;
 	}
 
 	#getChordIntervals(chordType) {

@@ -146,6 +146,19 @@ export class Setup {
 					}
 				}
 			});
+
+			if ($("#chords").is(":checked")) {
+				$('#chordsGroup').show();
+				$('#intervalsGroup').hide();
+			}
+			else if ($("#intervalNotes").is(":checked")) {
+				$('#chordsGroup').hide();
+				$('#intervalsGroup').show();
+			}
+			else {
+				$('#chordsGroup').hide();
+				$('#intervalsGroup').hide();
+			}
 		}
 	}
 
@@ -227,23 +240,31 @@ export class Setup {
 			const selection = event.target.value;
 
 			if (selection === "chords") {
+				$('#chordsGroup').show();
+				$('#intervalsGroup').hide();
 				$('#chordsGroup').prop('disabled', false);
-				$('#intervals').prop('disabled', true);
+				$('#intervalsGroup').prop('disabled', true);
 				$("#keySignature").val("0#");
 				$('#keySignature').trigger('change');
 				$('#keySignature').prop('disabled', true);
 			}
 			else if (selection === "interval") {
 				this.chord.clearChordLabel();
-				$('#intervals').prop('disabled', false);
+
+				$('#chordsGroup').hide();
+				$('#intervalsGroup').show();
+				$('#intervalsGroup').prop('disabled', false);
 				$('#chordsGroup').prop('disabled', true);
 				$('#chordsGroup').find(':checkbox').prop('checked', false);
 				$('#keySignature').prop('disabled', false);
 			}
 			else {
 				this.chord.clearChordLabel();
+
+				$('#chordsGroup').hide();
+				$('#intervalsGroup').hide();
 				$('#chordsGroup').prop('disabled', true);
-				$('#intervals').prop('disabled', true);
+				$('#intervalsGroup').prop('disabled', true);
 				$('#chordsGroup').find(':checkbox').prop('checked', false);
 				$('#keySignature').prop('disabled', false);
 			}
@@ -280,6 +301,21 @@ export class Setup {
 				}
 			});
 		});
+	}
+
+	changeGroupState(fieldsetID, onOff) {
+		var fieldset = $('#' + fieldsetID);
+		if (onOff === 'on') {
+			if (!fieldset.hasClass('uncollapsed')) {
+				fieldset.removeClass('uncollapsed').addClass('collapsed');
+			}
+		} else if (onOff === 'off') {
+			if (fieldset.hasClass('uncollapsed')) {
+				fieldset.removeClass('uncollapsed').addClass('collapsed');
+			}
+		} else {
+			console.error("Invalid parameter provided for 'onOff'. Please use 'on' or 'off'.");
+		}
 	}
 
 	restoreScreenState() {

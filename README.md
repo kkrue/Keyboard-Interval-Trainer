@@ -1,4 +1,4 @@
-# Keyboard-Interval-Trainer 0.5.3-alpha
+# Keyboard-Interval-Trainer
 Practice notes and intervals on a MIDI keyboard
 
 I started this project when I wanted my son to practice reading music, but I found that there were no good programs for practicing intervals on a MIDI music keyboard.  I found note trainers, but they taught recognition of individual notes, which isn't too helpful.
@@ -23,13 +23,14 @@ TO USE:
 6. You must use a browser that fully supports MIDI.  Firefox doesn't.  Chrome and Edge do.  Others?  Try your luck.  Point your browser to https://localhost:5000.
 7. Enjoy.  The next time you run it, all you need to do is execute node index.js.
 
-KNOWN ISSUES I PLAN TO FIX
+KNOWN ISSUES
 
 First of all, I publish fixes about once per week at this early stage, so check back often.  Download the trunk if you want the very latest fixes.
 
 - Notes played out of range don't show.
 - The range is deceptive for chords.  Due to their large span, the octave selection must be ignored.  If you pick C4-F4, you will get chords in the range of C-F.
-- There are no exercises for chords beginning on sharped/flatted notes.  This will take a bit of work.
+- Invalid note ranges are allowed.
+- Chords are a little unsophisticated in terms of music theory.  I'm puzzling out how to improve this.
 
 INSTALLING THE CERTIFICATE ON WINDOWS 11:
 

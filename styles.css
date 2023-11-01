@@ -29,6 +29,13 @@ fieldset {
 	margin-bottom: 1em;
 }
 
+fieldset[data-collapsible="true"].collapsed > *:not(legend) {
+	display: none;
+}
+fieldset[data-collapsible="never"] > legend {
+    cursor: default !important;
+}
+
 .flip_H {
 	transform: scale(-1, 1);
 	left:56px;

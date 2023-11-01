@@ -216,6 +216,18 @@ export class NoteTools {
 		return noteObj;
 	}
 
+	// This doesn't copy all fields, such as "displayed" fields, so call this early in note creation.
+	sharpNote(oNote) {
+		const letter = oNote.letter;
+		let note = oNote;
+
+		if ("CDFGA".includes(letter)) {
+			note = this.createNoteObject(oNote.letter + "#" + oNote.octave);
+		}
+
+		return note;
+	}
+
 	// Until everything gets changed to note objects, this method conditionally changes to MIDI notes.
 	createMidiNotesFromObjects(oNotes) {
 		if (typeof oNotes[0] == "string") {
@@ -298,6 +310,7 @@ export class NoteTools {
 		oNote.accidental = "f";
 		oNote.displayedAccidental = "f";
 		oNote.displayedNote = oNote.noteWithOctave;
+		oNote.hOffset = origNote.hOffset;
 
 		return oNote;
 	}
@@ -405,9 +418,14 @@ export class NoteTools {
 		const _this = this;
 		this.displayedNotes = [];
 
+		if (keySig == null) {
+			keySig = "0#";
+		}
+
 		// This does nothing if the notes are already objects.
 		const oNotes = notes.map(note => _this.createNoteObject(note));
 
+		this.#setDisplayedNotes(oNotes, noteType, keySig);
 		this.#hOffsetStackedNotes(oNotes);
 
 		oNotes.forEach((note, i) => {
@@ -423,21 +441,21 @@ export class NoteTools {
 		this.#createLedgerLines(noteType, oNotes);
 	}
 
+	#setDisplayedNotes(oNotes, noteType, keySig) {
+		oNotes.forEach((oNote, i) => {
+			if (noteType == "musicNote") {
+				oNote = this.getLineForPlayedNote(keySig, oNote);
+			}
+			else {
+				oNote.displayedNote = oNote.rawNoteWithOctave;
+			}
+		});
+	}
+
 	#showNote(oNote, noteNum, noteType, noteColor, keySig) {
 		let noteChar = document.getElementById(noteType + "_noteChar" + noteNum);
 		if (noteChar == null) {
 			return;
-		}
-
-		if (keySig == null) {
-			keySig = "0#";
-		}
-
-		if (noteType == "musicNote") {
-			oNote = this.getLineForPlayedNote(keySig, oNote);
-		}
-		else {
-			oNote.displayedNote = oNote.rawNoteWithOctave;
 		}
 
 		oNote = this.#displayedAccidentalForKey(keySig, oNote);
@@ -451,7 +469,7 @@ export class NoteTools {
 		let lastNoteWasStacked = false;
 
 		for (let oNote of oNoteArr) {
-			let notePos = parseInt(this.notePosition.get(oNote.rawNoteWithOctave));
+			let notePos = parseInt(this.notePosition.get(oNote.displayedNote));
 
 			let distance = Math.abs(notePos - lastPosition);
 
@@ -546,7 +564,6 @@ export class NoteTools {
 
 	// Place a character on a staff line.  The first line is 1 and starts at the bottom.  10 is the last one and sits on top.
 	#placeKeySigCharOnLine(character, lineNum, column) {
-		const STAFF_LINES = 10;
 		const lineZero = -1;
 		const pos = lineZero - (this.STAFF_LINE_SPACING_PX / 2) * (lineNum - 1);
 		const id = "keySignatureChars_" + lineNum + "_" + column;
@@ -679,10 +696,6 @@ export class NoteTools {
 
 		if (oLedgerInfo.numLedgers > 0) {
 			let left = ledgerContainer.offsetLeft;
-			let top = ledgerContainer.offsetTop;
-
-			let accidentalOffset = 0;
-			const containsSharp = oNotesArr.some(note => note.displayedAccidental != "");
 
 			ledgerGroup = (document.getElementById("ledgers")).cloneNode(true);
 			ledgerGroup.id = "ledgers_" + noteType;
