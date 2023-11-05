@@ -15,6 +15,12 @@ body {
 	top: -25px;
 }
 
+.chordLabelAccidental {
+	font-family: MusiSync;
+	font-size: 2em;
+	margin-left: 2px;
+}
+
 #controls {
 	float: left;
 	width: 300px;

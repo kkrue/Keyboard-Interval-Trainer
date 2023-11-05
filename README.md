@@ -27,6 +27,7 @@ KNOWN ISSUES
 
 First of all, I publish fixes about once per week at this early stage, so check back often.  Download the trunk if you want the very latest fixes.
 
+- Notes vertically overlap when one is a flat. This should get fixed soon.
 - Notes played out of range don't show.
 - The range is deceptive for chords.  Due to their large span, the octave selection must be ignored.  If you pick C4-F4, you will get chords in the range of C-F.
 - Invalid note ranges are allowed.

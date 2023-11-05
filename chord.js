@@ -69,6 +69,7 @@ export class ChordCreator {
 	}
 
 	// Chords cannot be a mix of sharp and flat keys.  If one is picked, all others must be of the same type.
+	// This function controls the interface.
 	keyTypeSelected() {
 		let returnValue = "";
 		const _this = this;
@@ -102,20 +103,33 @@ export class ChordCreator {
 		}
 
 		if (controlData.rootSharpsFlats == "true") {
-			rootNote = this.#getRandomSharp(rootNote);
+			rootNote = this.#getRandomSharpOrFlat(rootNote);
 		}
 
+		rootNote = this.noteTools.getFlatVersionOfSharp(rootNote);
 		const randomIndex = Math.floor(Math.random() * selectedChords.length);
 		const selectedChordName = selectedChords[randomIndex];
 
 		let chord = this.create(rootNote, selectedChords[randomIndex]);
-		this.currentChord = rootNote.note + selectedChordName;
+		this.#createChordLabel(rootNote, selectedChordName);
 		chord = this.invert(chord, inversions);
 
 		return chord;
 	}
 
-	#getRandomSharp(rootNote) {
+	#createChordLabel(rootNote, selectedChordName) {
+		let accidental = "";
+
+		if (rootNote.accidental == "f") {
+			accidental = `<span class="chordLabelAccidental">b</span>`;
+		}
+		else if (rootNote.accidental == "#") {
+			accidental = `<span class="chordLabelAccidental">B</span>`;
+		}
+		this.currentChord = rootNote.note + accidental + " " + selectedChordName;
+	}
+
+	#getRandomSharpOrFlat(rootNote) {
 		let isSharp = Boolean(Math.floor(Math.random() * 2));
 		rootNote = isSharp ? this.noteTools.sharpNote(rootNote) : rootNote;
 
@@ -146,7 +160,8 @@ export class ChordCreator {
 
 		for (let i = 0; i < inversionNumber; i++) {
 			let shiftedNote = chordNoteObjs.shift();
-			chordNoteObjs.push(this.#adjustOctave(shiftedNote, 1));
+			this.#adjustOctave(shiftedNote, 1)
+			chordNoteObjs.push(shiftedNote);
 		}
 
 		const rootNote = this.noteTools.createNoteObject(chordNoteObjs[0]);
@@ -171,14 +186,14 @@ export class ChordCreator {
 
 	#getChordNotes(rootNote, chordType) {
 		const chordIntervals = this.#getChordIntervals(chordType);
-		const chordNotes = this.#buildChordNotes(rootNote, chordIntervals, chordType);
+		const chordNotes = this.#buildChordNotes(rootNote, chordIntervals);
 
 		return chordNotes;
 	}
 
-	#adjustOctave(note, amount) {
-		const adjustedOctave = note.octave + amount;
-	  	return note.letter + adjustedOctave;
+	#adjustOctave(oNote, amount) {
+		const adjustedOctave = oNote.octave + amount;
+		oNote.octave = adjustedOctave;
 	}
 
 	#getChordIntervals(chordType) {
@@ -186,7 +201,7 @@ export class ChordCreator {
 		return chordData ? chordData.intervals : [];
 	}
 
-	#buildChordNotes(rootNote, chordIntervals, chordType) {
+	#buildChordNotes(rootNote, chordIntervals) {
 		const octave = parseInt(rootNote.slice(-1));
 		const noteLetter = rootNote.slice(0, -1);
 		const rootIndex = this.noteNames.indexOf(noteLetter);
@@ -220,10 +235,10 @@ export class ChordCreator {
 		return notesWithOctave;
 	}
 
-	getChordName(notes, inversion) {
-		const rootNote = notes[0]; // Assuming the first note in the array is the root note
-		const bassNote = notes[inversion];
+	// getChordName(notes, inversion) {
+	// 	const rootNote = notes[0]; // Assuming the first note in the array is the root note
+	// 	const bassNote = notes[inversion];
 
-		return `${rootNote}/${bassNote}`;
-	}
+	// 	return `${rootNote}/${bassNote}`;
+	// }
 }
