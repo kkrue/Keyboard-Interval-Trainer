@@ -144,8 +144,8 @@ export class ChordCreator {
 		return this.currentChord;
 	}
 
-	create(rootNoteObj, chordType) {
-		const chordNotes = this.#getChordNotes(rootNoteObj.midiNote, chordType);
+	create(oRootNote, chordType) {
+		const chordNotes = this.#getChordNotes(oRootNote, chordType);
 		this.noteTools.numNotes = chordNotes.length;
 
 		return chordNotes;
@@ -184,9 +184,9 @@ export class ChordCreator {
 		return keyboardKeys;
 	}
 
-	#getChordNotes(rootNote, chordType) {
+	#getChordNotes(oRootNote, chordType) {
 		const chordIntervals = this.#getChordIntervals(chordType);
-		const chordNotes = this.#buildChordNotes(rootNote, chordIntervals);
+		const chordNotes = this.#buildChordNotes(oRootNote, chordIntervals);
 
 		return chordNotes;
 	}
@@ -201,16 +201,15 @@ export class ChordCreator {
 		return chordData ? chordData.intervals : [];
 	}
 
-	#buildChordNotes(rootNote, chordIntervals) {
-		const octave = parseInt(rootNote.slice(-1));
-		const noteLetter = rootNote.slice(0, -1);
-		const rootIndex = this.noteNames.indexOf(noteLetter);
+	#buildChordNotes(oRootNote, chordIntervals) {
+		const rootIndex = this.noteNames.indexOf(oRootNote.midiNoteNoOctave);
+
 		if (rootIndex === -1 || chordIntervals.length === 0) {
 			return [];
 		}
 
 		let chordNotes = chordIntervals.map(interval => this.noteNames[(rootIndex + interval) % 12]);
-		chordNotes = this.#applyOctave(chordNotes, octave);
+		chordNotes = this.#applyOctave(chordNotes, parseInt(oRootNote.octave));
 		let oArrChordNotes = chordNotes.map(this.noteTools.createNoteObject);
 
 		return oArrChordNotes;

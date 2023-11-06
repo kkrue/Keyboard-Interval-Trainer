@@ -212,6 +212,7 @@ export class NoteTools {
 		noteObj.noteWithOctave = noteObj.note + noteObj.octave;
 		noteObj.rawNoteWithOctave = noteObj.letter + noteObj.octave;
 		noteObj.midiNote = note;
+		noteObj.midiNoteNoOctave = note.replace(/\d/g, '');
 
 		return noteObj;
 	}
@@ -311,6 +312,8 @@ export class NoteTools {
 		oNote.displayedAccidental = "f";
 		oNote.displayedNote = oNote.noteWithOctave;
 		oNote.hOffset = origNote.hOffset;
+		oNote.midiNote = origNote.midiNote;
+		oNote.midiNoteNoOctave = origNote.midiNoteNoOctave;
 
 		return oNote;
 	}
