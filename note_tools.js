@@ -426,10 +426,10 @@ export class NoteTools {
 		}
 
 		// This does nothing if the notes are already objects.
-		const oNotes = notes.map(note => _this.createNoteObject(note));
+		let oNotes = notes.map(note => _this.createNoteObject(note));
 
 		this.#setDisplayedNotes(oNotes, noteType, keySig);
-		this.#hOffsetStackedNotes(oNotes);
+		oNotes = this.#hOffsetStackedNotes(oNotes);
 
 		oNotes.forEach((note, i) => {
 			this.#showNote(
@@ -471,9 +471,12 @@ export class NoteTools {
 		let lastPosition = -1000;
 		let lastNoteWasStacked = false;
 
-		for (let oNote of oNoteArr) {
-			let notePos = parseInt(this.notePosition.get(oNote.displayedNote));
+		let updatedArr = oNoteArr.map(oNote => {
+			if (this.keySig.getKeySignatureType() == "flat" && oNote.accidental == "#") {
+				oNote = this.getFlatVersionOfSharp(oNote);
+			}
 
+			let notePos = parseInt(this.notePosition.get(oNote.displayedNote));
 			let distance = Math.abs(notePos - lastPosition);
 
 			if (distance == 1 && !lastNoteWasStacked) {
@@ -486,7 +489,11 @@ export class NoteTools {
 			}
 
 			lastPosition = notePos;
-		}
+
+			return oNote;
+		});
+
+		return updatedArr;
 	}
 
 	#getAccidentalChar(oNote) {
@@ -509,10 +516,6 @@ export class NoteTools {
 	}
 
 	#displayNoteOnScreen(oNote, noteChar, noteColor) {
-		if (this.keySig.getKeySignatureType() == "flat" && oNote.accidental == "#") {
-			oNote = this.getFlatVersionOfSharp(oNote);
-		}
-
 		let pos = this.notePosition.get(oNote.displayedNote);
 		let accidental = this.#getAccidentalChar(oNote);
 
