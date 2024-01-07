@@ -66,8 +66,7 @@ export class Game {
 			this.currentInterval[0] = this.noteGenerator.getRandomNote(startRange, endRange);
 		}
 		else if (controlData.noteGroups == "chords") {
-			let rootNote = this.noteGenerator.getRandomNote(startRange, endRange);
-			chord = this.chordCreator.getRandomChord(rootNote, parseInt(controlData.chordInversions));
+			chord = this.chordCreator.getRandomChord(startRange, endRange);
 
 			this.currentInterval = chord;
 		}
@@ -89,16 +88,20 @@ export class Game {
 
 	#displayNoteText() {
 		let noteDisplay = "";
+		let displayedNote = "";
 
 		if (this.currentInterval != undefined && this.chordCreator.getChordLabel() !== "") {
 			noteDisplay = this.chordCreator.getChordLabel();
 		}
 		else {
-			for (let item of this.currentInterval.reverse()) {
-				if (item instanceof Object) {
-					item = item.midiNote;
+			for (let oNote of this.currentInterval.reverse()) {
+				if (oNote.accidental == "f") {
+					displayedNote = oNote.letter + "b" + oNote.octave;
 				}
-				noteDisplay += item + "<br>";
+				else {
+					displayedNote = oNote.midiNote;
+				}
+				noteDisplay += displayedNote + "<br>";
 			}
 		}
 
@@ -147,12 +150,10 @@ export class Game {
 	}
 
 	judgeInput(playedNotes) {
-		const controlData = this.noteTools.getControlData();
-		const adjustedInterval = this.noteTools.adjustIntervalForKeySignature(controlData.keySignature, this.currentInterval);
-		const isEqual = this.noteTools.areNotesEqual(adjustedInterval, playedNotes);
+		const isEqual = this.noteTools.areNotesEqual(this.currentInterval, playedNotes);
 
 		if (isEqual) {
-			this.noteTools.showNotes(playedNotes, "userNote", "green", controlData.keySignature);
+			this.noteTools.showNotes(playedNotes, "userNote", "green");
 			this.#showResults(true);
 			this.#showStats();
 
@@ -162,7 +163,7 @@ export class Game {
 		}
 		else {
 			$("#speed").text("");
-			this.noteTools.showNotes(playedNotes, "userNote", "red", controlData.keySignature);
+			this.noteTools.showNotes(playedNotes, "userNote", "red");
 			this.#showResults(false);
 		}
 	}
@@ -205,6 +206,7 @@ export class Game {
 			gameOverMessage.hide();
 			musicContainer.css("opacity", "1");
 			$("#messageDisplay").css("visibility", "visible");
+			$("#noteDisplay").html("");
 		}, 2500);
 	}
 

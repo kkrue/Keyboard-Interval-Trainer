@@ -16,6 +16,19 @@
 		<script src="game_setup.js" type="module"></script>
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+		<script>
+			function showOverlay(event) {
+				event.preventDefault();
+				var overlay = document.getElementById("chordNoteSelection");
+				overlay.style.display = "block";
+				document.addEventListener("click", function(e) {
+					if (!overlay.contains(e.target) && e.target !== document.querySelector('.notesSelectionLink')) {
+						overlay.style.display = "none";
+					}
+				});
+			}
+		</script>
+
 		<script type="module">
 			import { Setup } from './game_setup.js';
 
@@ -72,16 +85,16 @@
 								<option value="2f">Bb / Gm (2 flats)</option>
 								<option value="3f">Eb / Cm (3 flats)</option>
 								<option value="4f">Ab / Fm (4 flats)</option>
-								<option value="5f">Db / Bbm (5 flats)</option>
-								<option value="6f">Gb / Ebm (6 flats)</option>
-								<option value="7f">Cb / Abm (7 flats)</option>
 							</select>
 						</div>
 
 						Range
 						<select name="startRange" id="startRange"></select> to <select name="endRange" id="endRange"></select>
 						<br>
-						<input type="checkbox" id="chkShowNotes"> Show notes<br>
+
+						<input type="checkbox" name="chkRestrictDiatonic" id="chkRestrictDiatonic"> Restrict to diatonic notes<br>
+						<input type="checkbox" name="chkAllowAccidentals" id="chkAllowAccidentals"> Allow sharps/flats<br>
+						<input type="checkbox" name="chkShowNotes" id="chkShowNotes"> Show notes<br>
 
 						<input type="text" name="numNoteTests" id="numNoteTests" size="2" value="20" onclick="this.select()" style="text-align: right;"> Correct to finish
 					</fieldset>
@@ -96,6 +109,7 @@
 								<option value="4">4</option>
 								<option value="5">5</option>
 								<option value="6">6</option>
+								<option value="7">7</option>
 							</select>
 							Min separation<br>
 
@@ -105,6 +119,8 @@
 								<option value="4">4</option>
 								<option value="5">5</option>
 								<option value="6">6</option>
+								<option value="7">7</option>
+								<option value="8">8</option>
 							</select>
 
 							Max separation<br>
@@ -119,8 +135,7 @@
 					<fieldset id="chordsGroup" style="display: none">
 						<legend>Chords</legend>
 
-						<div>
-							<span class="smallText">(For multiples, all must be of the same key type.)</span><br>
+						<div style="position: relative;">
 							Inversions
 							<select name="chordInversions" id="chordInversions">
 								<option value="0" selected>None</option>
@@ -128,22 +143,41 @@
 								<option value="2">Second Inversion</option>
 							</select>
 							<br>
-							<input type="checkbox" name="rootSharpsFlats" id="rootSharpsFlats" value="true" /> Allow sharps/flat for chord root<br>
+							<div id="notesSelectionContainer">
+								<a href="#" class="notesSelectionLink" onclick="showOverlay(event)">Allowed notes for root</a>
+
+								<div class="notesSelectionOverlay" id="chordNoteSelection">
+									<div class="smallText">Click outside this box to close.</div>
+									<input type="checkbox" id="chordLetterA" name="chordLetterA" checked value="A" />A<br>
+									<input type="checkbox" id="chordLetterA#" name="chordLetterA#" checked value="A#" />A#<br>
+									<input type="checkbox" id="chordLetterB" name="chordLetterB" checked value="B" />B<br>
+									<input type="checkbox" id="chordLetterC" name="chordLetterC" checked value="C" />C<br>
+									<input type="checkbox" id="chordLetterC#" name="chordLetterC#" checked value="C#" />C#<br>
+									<input type="checkbox" id="chordLetterD" name="chordLetterD" checked value="D" />D<br>
+									<input type="checkbox" id="chordLetterD#" name="chordLetterD#" checked value="D#" />D#<br>
+									<input type="checkbox" id="chordLetterE" name="chordLetterE" checked value="E" />E<br>
+									<input type="checkbox" id="chordLetterF" name="chordLetterF" checked value="F" />F<br>
+									<input type="checkbox" id="chordLetterF#" name="chordLetterF#" checked value="F#" />F#<br>
+									<input type="checkbox" id="chordLetterG" name="chordLetterG" checked value="G" />G<br>
+									<input type="checkbox" id="chordLetterG#" name="chordLetterG#" checked value="G#" />G#<br>
+								</div>
+							</div>
 							<hr>
 
 							<div style="margin-bottom: 0.5em"></div>
-							<input type="checkbox" id="chordTypeMaj" value="maj" /> Major<br>
-							<input type="checkbox" id="chordTypeMin" value="min" /> Minor<br>
-							<input type="checkbox" id="chordTypeAug" value="aug" /> Augmented<br>
-							<input type="checkbox" id="chordTypeDim" value="dim" /> Diminished<br>
-							<input type="checkbox" id="chordTypeSus2" value="sus2" /> Suspended 2nd<br>
-							<input type="checkbox" id="chordTypeSus4" value="sus4" /> Suspended 4th<br>
-							<input type="checkbox" id="chordTypeMaj7" value="maj7" /> Major 7th<br>
-							<input type="checkbox" id="chordTypeMin7" value="min7" /> Minor 7th<br>
-							<input type="checkbox" id="chordTypeDom7" value="dom7" /> Dominant 7th<br>
-							<input type="checkbox" id="chordTypeDim7" value="dim7" /> Diminished 7th<br>
-							<input type="checkbox" id="chordTypeMaj6" value="maj6" /> Major 6th<br>
-							<input type="checkbox" id="chordTypeMin6" value="min6" /> Minor 6th<br>
+							<input type="checkbox" id="chordTypeMaj" name="chordTypeMaj" value="maj" /> Major<br>
+							<input type="checkbox" id="chordTypeMin" name="chordTypeMin" value="min" /> Minor<br>
+							<input type="checkbox" id="chordTypeAug" name="chordTypeAug" value="aug" /> Augmented<br>
+							<input type="checkbox" id="chordTypeDim" name="chordTypeDim" value="dim" /> Diminished<br>
+							<input type="checkbox" id="chordTypeSus2" name="chordTypeSus2" value="sus2" /> Suspended 2nd<br>
+							<input type="checkbox" id="chordTypeSus4" name="chordTypeSus4" value="sus4" /> Suspended 4th<br>
+							<input type="checkbox" id="chordTypeMaj7" name="chordTypeMaj7" value="maj7" /> Major 7th<br>
+							<input type="checkbox" id="chordTypeMin7" name="chordTypeMin7" value="min7" /> Minor 7th<br>
+							<input type="checkbox" id="chordTypeDom7" name="chordTypeDom7" value="dom7" /> Dominant 7th<br>
+							<input type="checkbox" id="chordTypeDim7" name="chordTypeDim7" value="dim7" /> Diminished 7th<br>
+							<input type="checkbox" id="chordTypeMaj6" name="chordTypeMaj6" value="maj6" /> Major 6th<br>
+							<input type="checkbox" id="chordTypeMin6" name="chordTypeMin6" value="min6" /> Minor 6th<br>
+
 						</div>
 					</fieldset>
 				</div>

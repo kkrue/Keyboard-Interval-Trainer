@@ -1,4 +1,5 @@
 import { KeySignature } from './key_sig.js';
+import { ChordCreator } from './chord.js';
 
 export class NoteTools {
 	constructor() {
@@ -9,19 +10,18 @@ export class NoteTools {
 
 		this.LOWEST_BASS_NOTE = "C2";
 		this.LOWEST_TREBLE_NOTE = "A3";
+
 		this.STAFF_LINE_SPACING_PX = 17;
 		this.NOTE_LEFT_OFFSET = 180;
 
 		this.notePosition = new Map();
-		this.notesByPosition = new Map();
-		this.notesByNumber = new Map();
-
 		this.startOfFirstUpperLedger = 14;
 		this.numNotes = 4;
 		this.noteGroupId = 0;
 		this.displayedNotes = [];
 
 		this.keySig = new KeySignature(this);
+		this.chord = new ChordCreator(this, null);
 	}
 
 	#generateKeySigMap(clef) {
@@ -63,8 +63,12 @@ export class NoteTools {
 		}
 	}
 
+	getKeySigMap() {
+		return this.keySigMap;
+	}
+
 	#getAdjacentNote(startMidiNote, direction) {
-        const noteOrder = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+		const noteOrder = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         const noteObj = this.createNoteObject(startMidiNote);
 
         const parsedNote = /^([A-G])(#|b)?(\d+)$/.exec(startMidiNote);
@@ -102,30 +106,35 @@ export class NoteTools {
         return adjacentNote + nextOctave;
     }
 
-    #generateNoteToNumberMaps(clef) {
+    #generateNoteToNumberMap(clef) {
 		const startRange = 0;
-		const endRange = 17;
+		const endRange = 33; //F#6
 
 		let currentNote = this.LOWEST_TREBLE_NOTE;
 		if (clef == "bass") {
 			currentNote = this.LOWEST_BASS_NOTE;
 		}
 
-		for (let position = startRange; position <= endRange; position++) {
-			this.notePosition.set(currentNote, position);
-			this.notesByNumber.set(position, currentNote);
+		let position = 0;
+		let lastNote = "";
+		this.notePosition = new Map();
 
+		for (let i = startRange; i <= endRange; i++) {
+			// The position only advances when the note advances, so a C and C# have the same position.
+			if (lastNote != "" && lastNote != currentNote.charAt(0)) {
+				position++;
+			}
+
+			this.notePosition.set(currentNote, position);
+
+			lastNote = currentNote.charAt(0);
 			currentNote = this.#getAdjacentNote(currentNote, "next");
 		}
 	}
 
 	loadNotePositionsOnStaff(clef) {
-		this.#generateNoteToNumberMaps(clef);
+		this.#generateNoteToNumberMap(clef);
 		this.#generateKeySigMap(clef);
-
-		for (const [key, value] of this.notePosition) {
-			this.notesByPosition.set(value, key);
-		}
 
 		this.sharped = new Map();
 		this.sharped.set("C", "C#");
@@ -136,7 +145,7 @@ export class NoteTools {
 		this.sharped.set("A", "A#");
 		this.sharped.set("B", "C");
 
-		// Midi always shows flats as the equivalent sharp, so we go with that.
+		// Midi always shows flats as the areNotesEqualivalent sharp, so we go with that.
 		this.flatted = new Map();
 		this.flatted.set("C", "B");
 		this.flatted.set("D", "C#");
@@ -145,8 +154,6 @@ export class NoteTools {
 		this.flatted.set("G", "F#");
 		this.flatted.set("A", "G#");
 		this.flatted.set("B", "A#");
-
-		this.controlData;
 	}
 
 	setControlData(jsonData) {
@@ -157,12 +164,43 @@ export class NoteTools {
 		return this.controlData;
 	}
 
-	getNotesByNumber(clef) {
-		if (clef != null) {
-			this.#generateNoteToNumberMaps(clef);
+	getNotesByNumber(noteNumber, allowSharps) {
+		const notes = Array.from(this.notePosition.entries())
+		.filter(([id, value]) => value === noteNumber)
+		.map(([id]) => id);
+
+		const index = allowSharps ? this.getRandomNumber(0, 1) : 0;
+
+		if (notes.length == 1) {
+			return notes[0];
+		}
+		else {
+			return notes[index];
+		}
+	}
+
+	getAllMidiNotes(clef, noSharps) {
+		this.#generateNoteToNumberMap(clef);
+		let result = Array.from(this.notePosition.entries()).map(([key, value]) => [value, key]);
+
+		if (noSharps) {
+			result = result.filter(([value, key]) => key.indexOf("#") === -1);
 		}
 
-		return this.notesByNumber;
+		return result;
+	}
+
+	getRandomNumber(min, max) {
+		let result;
+
+		if (min == max || min > max) {
+			result = min;
+		}
+		else {
+			result = Math.floor(Math.random() * (max - min + 1) + min);
+		}
+
+		return result;
 	}
 
 	reset() {
@@ -182,7 +220,7 @@ export class NoteTools {
 			accidental
 			noteWithOctave
 			rawNoteWithOctave (no sharps or flats)
-			midiNote
+			midiNote (the original note)
 		*/
 
 		if (typeof note === 'object') {
@@ -214,35 +252,28 @@ export class NoteTools {
 		noteObj.midiNote = note;
 		noteObj.midiNoteNoOctave = note.replace(/\d/g, '');
 
+		noteObj.setOctave = (octave) => {
+			noteObj.octave = octave;
+			noteObj.noteWithOctave = noteObj.note + noteObj.octave;
+			noteObj.rawNoteWithOctave = noteObj.letter + noteObj.octave;
+		}
+
 		return noteObj;
 	}
 
-	// This doesn't copy all fields, such as "displayed" fields, so call this early in note creation.
-	sharpNote(oNote) {
-		const letter = oNote.letter;
-		let note = oNote;
+	sharpNote(note) {
+		const letter = note.substr(0, 1);
+		const octave = note.substr(1, 2);
 
-		if ("CDFGA".includes(letter)) {
-			note = this.createNoteObject(oNote.letter + "#" + oNote.octave);
-		}
+		note = letter + "#" + octave;
 
 		return note;
 	}
 
-	// Until everything gets changed to note objects, this method conditionally changes to MIDI notes.
-	createMidiNotesFromObjects(oNotes) {
-		if (typeof oNotes[0] == "string") {
-			return oNotes;
-		}
-
-		return oNotes.map(oNote => {
-			return oNote.noteWithOctave;
-		});
-	}
-
 	areNotesEqual(notes1, notes2) {
-		notes1 = this.createMidiNotesFromObjects(notes1);
-		notes2 = this.createMidiNotesFromObjects(notes2);
+		notes1 = notes1.map(oNote => {
+			return oNote.midiNote;
+		});
 
 		return JSON.stringify(notes1.sort()) === JSON.stringify(notes2.sort());
 	}
@@ -261,6 +292,7 @@ export class NoteTools {
 
 	// Get the diatonic note for the key signature. Example: For Dmaj, pass in an F, get F#.  Pass in E, get E.
 	// Return the sharp form, so a Db is a C#.
+	// This probably needs fixed after code changes to incorporate sharps and flats.
 	getNoteForKeySignature(keySig, oNote) {
 		const sharpOrFlat = keySig.charAt(1);
 
@@ -307,6 +339,7 @@ export class NoteTools {
 			newNoteLetter = "B";
 		}
 
+		// Create copy note function
 		const oNote = this.createNoteObject(newNoteLetter + origNote.octave);
 		oNote.accidental = "f";
 		oNote.displayedAccidental = "f";
@@ -316,6 +349,21 @@ export class NoteTools {
 		oNote.midiNoteNoOctave = origNote.midiNoteNoOctave;
 
 		return oNote;
+	}
+
+	getKeySignatureType() {
+		let keyType = this.chord.keyTypeSelected();
+
+		if (keyType == "") {
+			if ($("#keySignature").val().includes("f")) {
+				keyType = "flat";
+			}
+			else if ($("#keySignature").val().includes("#")) {
+				keyType = "sharp";
+			}
+		}
+
+		return keyType;
 	}
 
 	#adjustNoteForKeySignature(sharpOrFlat, oNote) {
@@ -338,6 +386,9 @@ export class NoteTools {
 		}
 
 		const newNote = this.createNoteObject(adjustedNote);
+
+		newNote.midiNote = oNote.midiNote;
+		newNote.midiNoteNoOctave = oNote.midiNoteNoOctave;
 
 		return newNote;
 	}
@@ -417,13 +468,10 @@ export class NoteTools {
 		return noteObj;
 	}
 
-	showNotes(notes, noteType, noteColor, keySig) {
+	showNotes(notes, noteType, noteColor) {
 		const _this = this;
+		const keySig = this.controlData.keySignature;
 		this.displayedNotes = [];
-
-		if (keySig == null) {
-			keySig = "0#";
-		}
 
 		// This does nothing if the notes are already objects.
 		let oNotes = notes.map(note => _this.createNoteObject(note));
@@ -447,10 +495,10 @@ export class NoteTools {
 	#setDisplayedNotes(oNotes, noteType, keySig) {
 		oNotes.forEach((oNote, i) => {
 			if (noteType == "musicNote") {
-				oNote = this.getLineForPlayedNote(keySig, oNote);
+				oNote.displayedNote = oNote.rawNoteWithOctave;
 			}
 			else {
-				oNote.displayedNote = oNote.rawNoteWithOctave;
+				oNote = this.getLineForPlayedNote(keySig, oNote);
 			}
 		});
 	}
@@ -472,7 +520,7 @@ export class NoteTools {
 		let lastNoteWasStacked = false;
 
 		let updatedArr = oNoteArr.map(oNote => {
-			if (this.keySig.getKeySignatureType() == "flat" && oNote.accidental == "#") {
+			if (this.getKeySignatureType() == "flat" && oNote.accidental == "#") {
 				oNote = this.getFlatVersionOfSharp(oNote);
 			}
 

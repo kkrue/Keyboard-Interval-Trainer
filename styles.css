@@ -3,6 +3,10 @@
 	src: url('Musisync-KVLZ.ttf')
 }
 
+a:visited {
+	color: black;
+}
+
 body {
 	font-family: Verdana, Helvetica, sans-serif;
 	font-size: 0.9em;
@@ -130,6 +134,28 @@ legend {
 	position: relative;
 	margin-right: 10px;
 	width: 140px;
+}
+
+.notesSelectionContainer {
+	position: relative;
+	display: inline-block;
+}
+
+.notesSelectionLink {
+	display: inline-block;
+	padding-top: 8px;
+}
+
+.notesSelectionOverlay {
+	display: none;
+	position: absolute;
+	top: 0;
+	left: 100%;
+	margin-left: 10px; /* Adjust this value to control the space between link and overlay */
+	width: 150px;
+	height: 320px;
+	border: 1px solid black;
+	z-index: 1;
 }
 
 #scoreBoard {

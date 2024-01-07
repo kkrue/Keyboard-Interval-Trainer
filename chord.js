@@ -1,5 +1,5 @@
 export class ChordCreator {
-	constructor(noteTools) {
+	constructor(noteTools, noteGenerator) {
 		this.chordTypes = {
 			maj: {
 				intervals: [0, 4, 7],
@@ -51,14 +51,13 @@ export class ChordCreator {
 			}
 		};
 
-		this.keyboardKeys = this.#generateKeyboardKeys(9);
-		this.noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-
 		this.noteTools = noteTools;
+		this.noteGenerator = noteGenerator;
+
 		this.currentChord = "";
 	}
 
-	getKeyType(chordType = this.currentChord) {
+	getChordKeyType(chordType = this.currentChord) {
 		const chordData = this.chordTypes[chordType];
 
 		if (chordData.keyType == "flat") {
@@ -68,8 +67,6 @@ export class ChordCreator {
 		return "sharp";
 	}
 
-	// Chords cannot be a mix of sharp and flat keys.  If one is picked, all others must be of the same type.
-	// This function controls the interface.
 	keyTypeSelected() {
 		let returnValue = "";
 		const _this = this;
@@ -77,7 +74,7 @@ export class ChordCreator {
 		$('input[id^="chordType"]').each(function() {
 			if ($(this).is(':checked')) {
 				let value = $(this).val();
-				let keyType = _this.getKeyType(value);
+				let keyType = _this.getChordKeyType(value);
 
 				returnValue = keyType;
 				return false;
@@ -87,10 +84,13 @@ export class ChordCreator {
 		return returnValue;
 	}
 
-	getRandomChord(rootNote, inversions) {
+	getRandomChord(startRange, endRange) {
 		const selectedChords = [];
 		const allCheckedChordTypes = $('input[id^="chordType"]:checked');
 		const controlData = this.noteTools.getControlData();
+
+		let rootNote = this.noteGenerator.getRandomNote(startRange, endRange);
+		const inversions = parseInt(controlData.chordInversions)
 
 		if (allCheckedChordTypes.length == 0) {
 			$('input[id="chordTypeMaj"]').prop('checked', true); // Change to use controlData
@@ -102,11 +102,6 @@ export class ChordCreator {
 			});
 		}
 
-		if (controlData.rootSharpsFlats == "true") {
-			rootNote = this.#getRandomSharpOrFlat(rootNote);
-		}
-
-		rootNote = this.noteTools.getFlatVersionOfSharp(rootNote);
 		const randomIndex = Math.floor(Math.random() * selectedChords.length);
 		const selectedChordName = selectedChords[randomIndex];
 
@@ -126,14 +121,7 @@ export class ChordCreator {
 		else if (rootNote.accidental == "#") {
 			accidental = `<span class="chordLabelAccidental">B</span>`;
 		}
-		this.currentChord = rootNote.note + accidental + " " + selectedChordName;
-	}
-
-	#getRandomSharpOrFlat(rootNote) {
-		let isSharp = Boolean(Math.floor(Math.random() * 2));
-		rootNote = isSharp ? this.noteTools.sharpNote(rootNote) : rootNote;
-
-		return rootNote;
+		this.currentChord = rootNote.letter + accidental + " " + selectedChordName;
 	}
 
 	clearChordLabel() {
@@ -170,20 +158,6 @@ export class ChordCreator {
 		return chordNoteObjs;
 	}
 
-	#generateKeyboardKeys(octaveRange) {
-		const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-
-		const keyboardKeys = notes.flatMap((note, index) => {
-			return Array.from({ length: octaveRange + 1 }, (_, octave) => {
-				const key = `${note}${octave}`;
-				const absoluteNumber = octave * notes.length + index;
-				return [key, absoluteNumber];
-			});
-		});
-
-		return keyboardKeys;
-	}
-
 	#getChordNotes(oRootNote, chordType) {
 		const chordIntervals = this.#getChordIntervals(chordType);
 		const chordNotes = this.#buildChordNotes(oRootNote, chordIntervals);
@@ -192,8 +166,7 @@ export class ChordCreator {
 	}
 
 	#adjustOctave(oNote, amount) {
-		const adjustedOctave = oNote.octave + amount;
-		oNote.octave = adjustedOctave;
+		oNote.setOctave(oNote.octave + amount);
 	}
 
 	#getChordIntervals(chordType) {
@@ -202,13 +175,13 @@ export class ChordCreator {
 	}
 
 	#buildChordNotes(oRootNote, chordIntervals) {
-		const rootIndex = this.noteNames.indexOf(oRootNote.midiNoteNoOctave);
+		const rootIndex = this.noteGenerator.getKeyboardNotes(true).indexOf(oRootNote.midiNote);
 
 		if (rootIndex === -1 || chordIntervals.length === 0) {
 			return [];
 		}
 
-		let chordNotes = chordIntervals.map(interval => this.noteNames[(rootIndex + interval) % 12]);
+		let chordNotes = chordIntervals.map(interval => this.noteGenerator.getNoteNames()[(rootIndex + interval) % 12]);
 		chordNotes = this.#applyOctave(chordNotes, parseInt(oRootNote.octave));
 		let oArrChordNotes = chordNotes.map(this.noteTools.createNoteObject);
 
@@ -221,7 +194,7 @@ export class ChordCreator {
 		const notesWithOctave = [];
 
 		for (let note of notes) {
-			let noteNum = this.noteNames.indexOf(note);
+			let noteNum = this.noteGenerator.getNoteNames().indexOf(note);
 
 			if (noteNum < lastNoteNum && adjustedOctave < octave + 1) {
 				adjustedOctave++;
@@ -233,11 +206,4 @@ export class ChordCreator {
 
 		return notesWithOctave;
 	}
-
-	// getChordName(notes, inversion) {
-	// 	const rootNote = notes[0]; // Assuming the first note in the array is the root note
-	// 	const bassNote = notes[inversion];
-
-	// 	return `${rootNote}/${bassNote}`;
-	// }
 }

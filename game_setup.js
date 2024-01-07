@@ -8,7 +8,7 @@ export class Setup {
 	constructor() {
 		this.noteTools = new NoteTools();
 		this.noteGenerator = new NoteGenerator(this.noteTools);
-		this.chord = new ChordCreator(this.noteTools);
+		this.chord = new ChordCreator(this.noteTools, this.noteGenerator);
 		this.keyboard = new Keyboard(this.noteTools);
 		this.game = new Game(this.noteTools, this.noteGenerator, this.chord);
 
@@ -49,6 +49,7 @@ export class Setup {
 
 	load() {
 		let clef;
+
 		$("#messageDisplay").css("visibility", "visible");
 
 		if (this.formData == null || this.formData.bassClef == null) {
@@ -71,14 +72,14 @@ export class Setup {
 	}
 
 	fillRangeSelects(clef) {
-		const notes = this.noteTools.getNotesByNumber(clef);
+		const notes = this.noteTools.getAllMidiNotes(clef, true);
 
 		$('#startRange').empty();
 		$('#endRange').empty();
 
-		for (const [key, value] of notes) {
-			$('#startRange').append( $('<option></option>').val(key).html(value) );
-			$('#endRange').append( $('<option></option>').val(key).html(value) );
+		for (let notePositionPair of notes) {
+			$('#startRange').append( $('<option></option>').val(notePositionPair[0]).html(notePositionPair[1]) );
+			$('#endRange').append( $('<option></option>').val(notePositionPair[0]).html(notePositionPair[1]) );
 
 			const end = document.querySelector("#endRange");
 			end.selectedIndex = end.options.length - 1;
@@ -181,14 +182,13 @@ export class Setup {
 				  });
 			});
 
-		$('#frmControls :input').on('change', function() {
-			_this.saveFormData();
-		});
-
 		$("#scoreCorrect, #scoreWrong, #scoreTotal").click(() => {
 			_this.setFormData();
 			_this.game.reset();
-			_this.game.startTimer();
+
+			if (_this.isGameReady()) {
+				_this.game.startTimer();
+			}
 		});
 
 		$("#notesInInterval").change(() => {
@@ -226,12 +226,22 @@ export class Setup {
 			_this.game.reset();
 			const value = event.delegateTarget[event.delegateTarget.selectedIndex].value;
 			_this.noteTools.showKeySignature(value);
+
+			let keyType = _this.noteTools.getKeySignatureType($("#keySignature").val());
+			$("[id^=chordType]").each(function() {
+				let keyTypeOfCheckedChord = _this.chord.getChordKeyType($(this).val());
+
+				if (keyType != keyTypeOfCheckedChord) {
+					$(this).prop('checked', false); // New key type, so reset all chords
+				}
+			});
 		});
 
 		$("#chkShowNotes").change(event => {
 			if ($("#chkShowNotes").is(":checked")) {
 				$("#noteDisplay").show();
-			} else {
+			}
+			else {
 				$("#noteDisplay").hide();
 			}
 		});
@@ -246,7 +256,6 @@ export class Setup {
 				$('#intervalsGroup').prop('disabled', true);
 				$("#keySignature").val("0#");
 				$('#keySignature').trigger('change');
-				$('#keySignature').prop('disabled', true);
 			}
 			else if (selection === "interval") {
 				this.chord.clearChordLabel();
@@ -255,7 +264,6 @@ export class Setup {
 				$('#intervalsGroup').show();
 				$('#intervalsGroup').prop('disabled', false);
 				$('#chordsGroup').prop('disabled', true);
-				$('#chordsGroup').find(':checkbox').prop('checked', false);
 				$('#keySignature').prop('disabled', false);
 			}
 			else {
@@ -265,11 +273,16 @@ export class Setup {
 				$('#intervalsGroup').hide();
 				$('#chordsGroup').prop('disabled', true);
 				$('#intervalsGroup').prop('disabled', true);
-				$('#chordsGroup').find(':checkbox').prop('checked', false);
 				$('#keySignature').prop('disabled', false);
 			}
 
 			_this.setFormData();
+		});
+
+		$("#chkRestrictDiatonic").on("click", () => {
+			if ($("#chkRestrictDiatonic").is(":checked")) {
+				$("#chkAllowAccidentals").prop('checked', true);
+			}
 		});
 
 		$("#startRange, #endRange").on("change", () => {
@@ -281,26 +294,39 @@ export class Setup {
 			_this.game.reset();
 		});
 
+		$('[id^="chordLetter"]').change(function () {
+			// Check if at least one checkbox is checked
+			if ($('[id^="chordLetter"]:checked').length == 0) {
+				alert('At least one checkbox must be checked!');
+				$(this).prop('checked', true);
+			}
+		});
+
 		const chordCheckboxes = $('input[id^="chordType"]');
 
 		chordCheckboxes.on('change', function() {
 			const selectedChord = $(this);
-			const selectedChordId = $(this).prop("id");
-			const selectedChordType = _this.chord.getKeyType(selectedChord.val());
+			const selectedChordType = _this.chord.getChordKeyType(selectedChord.val());
+			const selectedKeyType = _this.noteTools.getKeySignatureType();
 
-			chordCheckboxes.each(function() {
-				const currentChordId = $(this).prop("id");
-
-				if (selectedChordId != currentChordId) {
-					const chordTypeInList = $(this).val();
-					const chordTypeInListKeyType = _this.chord.getKeyType(chordTypeInList);
-
-					if (chordTypeInListKeyType !== selectedChordType && $(this).is(':checked')) {
-						selectedChord.prop('checked', false);
-					}
-				}
-			});
+			if (selectedChordType != selectedKeyType && selectedChord.is(':checked')) {
+				selectedChord.prop('checked', false);
+			}
 		});
+
+		$('#frmControls :input').on('change', function() {
+			_this.saveFormData();
+		});
+	}
+
+	isGameReady() {
+		if ($("#chords").is(":checked") && $("[id^=chordType]:checked").length == 0) {
+			$("#messageDisplay").html("You must choose a chord type.");
+			$("#messageDisplay").css("visibility", "visible");
+			return false;
+		}
+
+		return true;
 	}
 
 	changeGroupState(fieldsetID, onOff) {
@@ -354,10 +380,11 @@ export class Setup {
 
 	convertFormToJSON(form) {
 		return $(form)
-		  .serializeArray()
-		  .reduce(function (json, { name, value }) {
-			json[name] = value;
-			return json;
-		  }, {});
+			.serializeArray()
+			.reduce(function (json, { name, value }) {
+				json[name] = value;
+				return json;
+			}, {}
+		);
 	}
 }

@@ -6,19 +6,4 @@ export class KeySignature {
 		this.chord = new ChordCreator(this.noteTools);
 		this.noteTools = noteTools;
 	}
-
-	getKeySignatureType() {
-		let keyType = this.chord.keyTypeSelected();
-
-		if (keyType == "") {
-			if ($("#keySignature").val().includes("f")) {
-				keyType = "flat";
-			}
-			else if ($("#keySignature").val().includes("#")) {
-				keyType = "sharp";
-			}
-		}
-
-		return keyType;
-	}
 }
