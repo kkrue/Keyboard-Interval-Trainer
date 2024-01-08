@@ -272,7 +272,7 @@ export class NoteTools {
 
 	areNotesEqual(notes1, notes2) {
 		notes1 = notes1.map(oNote => {
-			return oNote.midiNote;
+			return oNote.noteWithOctave;
 		});
 
 		return JSON.stringify(notes1.sort()) === JSON.stringify(notes2.sort());
